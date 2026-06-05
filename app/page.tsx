@@ -20,9 +20,11 @@ export default function Home() {
   const [showAllNews, setShowAllNews] = useState(false);
 
   useEffect(() => {
+    // ページロード時、URLにハッシュ（#projects）が含まれているかチェック
     const hasHash = window.location.hash !== "";
     const hasVisited = sessionStorage.getItem("portfolio_visited");
 
+    // ハッシュリンク経由で戻ってきた場合は、オープニングを強制スキップ
     if (hasVisited || hasHash) {
       setIsFirstVisit(false);
     } else {
@@ -66,12 +68,16 @@ export default function Home() {
       )}
 
       {/* ＝＝＝ ヒーローセクション ＝＝＝ */}
-      <main className="relative min-h-screen flex flex-col justify-center items-start px-8 md:px-24 w-full max-w-7xl mx-auto">
+      {/* pb-32 md:pb-0 を追加して、スマホ時のみ画面下部に余白を確保 */}
+      <main className="relative min-h-screen flex flex-col justify-center items-start px-8 md:px-24 w-full max-w-7xl mx-auto pb-32 md:pb-0">
+        
+        {/* 演出1：背景の光のぼかし */}
         <div className="absolute inset-0 pointer-events-none -z-20 overflow-hidden">
           <div className="absolute -top-[20%] -right-[10%] w-[50vw] h-[50vw] rounded-full bg-gray-200/40 blur-[120px]" />
           <div className="absolute -bottom-[20%] -left-[10%] w-[40vw] h-[40vw] rounded-full bg-gray-200/40 blur-[120px]" />
         </div>
 
+        {/* 演出2：背景の巨大透かし文字（奥行きの演出） */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -83,10 +89,12 @@ export default function Home() {
           </h1>
         </motion.div>
 
+        {/* 既存のメインテキスト群 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut", delay: delayBase }}
+          className="relative z-10"
         >
           <p className="text-sm md:text-base font-semibold tracking-wider text-gray-400 mb-2">
             PORTFOLIO 2026
@@ -97,6 +105,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut", delay: delayBase + 0.2 }}
+          className="relative z-10"
         >
           <h1 className="text-5xl md:text-8xl font-black tracking-tighter mb-4">
             Riku Umezawa
@@ -107,6 +116,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut", delay: delayBase + 0.4 }}
+          className="relative z-10"
         >
           <h2 className="text-xl md:text-2xl font-medium text-gray-500 mb-8">
             Front-End Developer
@@ -117,19 +127,21 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut", delay: delayBase + 0.6 }}
+          className="relative z-10"
         >
           <p className="text-gray-600 max-w-lg leading-relaxed mb-10">
-            <span className="font-bold text-[#1A1A1A] block mb-2">ラーメンと旅行大好きエンジニア</span>
+            <span className="font-bold text-[#1A1A1A] block mb-2">ラーメンと旅行大好きエンジニア🍜✈️</span>
             電気電子工学の知見を活かしつつ、Webフロントエンドとモバイルアプリ開発を探求しています。
             SysHack2026にてCyberAgent賞を受賞した『muscloop』など、ユーザーの心を動かす滑らかで美しいUI/UXの実現を目指しています。
           </p>
         </motion.div>
 
+        {/* 演出3：スクロールインジケーター（下に誘導するアニメーション） */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: delayBase + 1.2 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none z-0"
         >
           <span
             className="text-[10px] font-bold tracking-[0.3em] text-gray-400 mb-4"
@@ -141,13 +153,17 @@ export default function Home() {
             <motion.div
               className="w-full h-1/2 bg-[#1A1A1A] absolute top-0"
               animate={{ y: ["-100%", "200%"] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+              transition={{
+                repeat: Infinity,
+                duration: 1.5,
+                ease: "easeInOut",
+              }}
             />
           </div>
         </motion.div>
       </main>
 
-      {/* ＝＝＝ ニュース＆アクティビティ ＝＝＝ */}
+      {/* ＝＝＝ ニュース＆アクティビティ セクション ＝＝＝ */}
       <section id="news" className="w-full px-8 md:px-24 py-24 bg-[#FAFAFA] border-t border-gray-100">
         <div className="max-w-3xl mx-auto">
           <motion.h3
@@ -194,7 +210,7 @@ export default function Home() {
       </section>
 
       {/* ＝＝＝ プロジェクトセクション ＝＝＝ */}
-      <section id="projects" className="w-full px-8 md:px-24 py-32 bg-white">
+      <section id="projects" className="w-full px-8 md:px-24 py-32 bg-white scroll-mt-24">
         <div className="max-w-7xl mx-auto">
           <motion.h3
             initial={{ opacity: 0, y: 20 }}
@@ -205,14 +221,12 @@ export default function Home() {
             Selected Works
           </motion.h3>
 
-          {/* ここに目印となる id="muscloop-card" を追加しました */}
           <motion.div
-            id="muscloop-card"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="flex flex-col lg:flex-row gap-12 items-center scroll-mt-24"
+            className="flex flex-col lg:flex-row gap-12 items-center"
           >
             <div className="w-full lg:w-1/2 rounded-3xl overflow-hidden shadow-sm border border-gray-100 bg-[#FAFAFA] flex justify-center items-center p-8 aspect-video relative">
               <Image
@@ -255,6 +269,7 @@ export default function Home() {
       {/* ＝＝＝ About（自己紹介）セクション ＝＝＝ */}
       <section id="about" className="w-full px-8 md:px-24 py-32 bg-[#FAFAFA]">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-16">
+          
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -296,12 +311,14 @@ export default function Home() {
               </div>
             </div>
           </motion.div>
+          
         </div>
       </section>
 
       {/* ＝＝＝ フッター（コンタクト情報） ＝＝＝ */}
       <footer className="w-full pt-24 pb-12 bg-white border-t border-gray-100 flex flex-col items-center">
         <div className="flex flex-col gap-6 mb-16 items-start">
+          
           <a href="https://x.com/eggplant__umrk" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-[#1A1A1A] hover:text-gray-500 transition-colors group">
             <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" className="group-hover:scale-110 transition-transform">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -323,7 +340,9 @@ export default function Home() {
             </svg>
             <span className="text-xl font-medium tracking-wide">eggplant2006@au.com</span>
           </a>
+          
         </div>
+        
         <p className="text-gray-400 text-sm tracking-wider">© 2026 Riku Umezawa. All rights reserved.</p>
       </footer>
     </div>
