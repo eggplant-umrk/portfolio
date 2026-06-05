@@ -379,7 +379,7 @@ export default function Home() {
       <footer className="w-full pt-24 pb-12 bg-white dark:bg-[#1A1A1A] border-t border-gray-100 dark:border-gray-900 flex flex-col items-center transition-colors duration-500">
         <div className="flex flex-col gap-6 mb-16 items-start">
           
-          <a href="https://x.com/eggplant__umrk" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-[#1A1A1A] dark:text-white hover:text-gray-500 dark:hover:text-gray-400 transition-colors group">
+          <a href="https://x.com/eggplant_umrk?s=11&t=NqyCGbLtTWXP3ARiNEz16A" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-[#1A1A1A] dark:text-white hover:text-gray-500 dark:hover:text-gray-400 transition-colors group">
             <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" className="group-hover:scale-110 transition-transform">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
             </svg>
