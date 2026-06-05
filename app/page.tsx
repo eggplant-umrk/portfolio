@@ -75,6 +75,8 @@ const newsData = [
 export default function Home() {
   const [isFirstVisit, setIsFirstVisit] = useState<boolean | null>(null);
   const [showAllNews, setShowAllNews] = useState(false);
+  // 👇 アニメーションが完全に終わったかを判定するステートを追加
+  const [isOpeningDone, setIsOpeningDone] = useState(false);
 
   useEffect(() => {
     const hasHash = window.location.hash !== "";
@@ -82,6 +84,7 @@ export default function Home() {
 
     if (hasVisited || hasHash) {
       setIsFirstVisit(false);
+      setIsOpeningDone(true); // スキップ時は「終わった」ことにする
     } else {
       sessionStorage.setItem("portfolio_visited", "true");
       setIsFirstVisit(true);
@@ -100,11 +103,13 @@ export default function Home() {
       <ThemeToggle />
 
       {/* ＝＝＝ オープニングアニメーション ＝＝＝ */}
-      {isFirstVisit && (
+      {/* 👇 !isOpeningDone の時だけ画面に存在させる（終わったらDOMから消す） */}
+      {isFirstVisit && !isOpeningDone && (
         <motion.div
           initial={{ y: 0 }}
           animate={{ y: "-100vh" }}
           transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1], delay: 2.2 }}
+          onAnimationComplete={() => setIsOpeningDone(true)} // 👇 スライドし終わったら完了フラグを立てる
           className="fixed inset-0 z-50 flex items-center justify-center bg-[#1A1A1A]"
         >
           <motion.div
@@ -126,7 +131,6 @@ export default function Home() {
       )}
 
       {/* ＝＝＝ ヒーローセクション ＝＝＝ */}
-      {/* 内部要素を縦並びのフレックスにし、上下の余白（pt-12 pb-8）を確保 */}
       <main className="relative min-h-screen flex flex-col w-full overflow-hidden pt-12 pb-8">
         
         {/* 演出1：背景の光のぼかし */}
@@ -147,7 +151,7 @@ export default function Home() {
           </h1>
         </motion.div>
 
-        {/* メインテキスト群（flex-grow を持たせて、画面に余裕がある時は中央寄せにする） */}
+        {/* メインテキスト群 */}
         <div className="relative z-10 w-full max-w-7xl mx-auto px-8 md:px-24 flex-grow flex flex-col justify-center items-start">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -192,8 +196,7 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* 演出3：スクロールインジケーター（absoluteを廃止し、通常フローの最下部に配置） */}
-        {/* mt-12（最低限の文字との余白）と shrink-0（画面縮小時にパーツが潰れるのを防ぐ）を追加 */}
+        {/* 演出3：スクロールインジケーター */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
