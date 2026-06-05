@@ -15,7 +15,7 @@ const notoSansJP = Noto_Sans_JP({
 
 export const metadata: Metadata = {
   title: "Riku Umezawa | Portfolio",
-  description: "Front-End Developer / UI/UX Design Portfolio",
+  description: "rikuのポートフォリオサイトです。パソコン推奨です",
 };
 
 export default function RootLayout({
