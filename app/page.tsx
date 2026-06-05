@@ -130,7 +130,7 @@ export default function Home() {
           className="relative z-10"
         >
           <p className="text-gray-600 max-w-lg leading-relaxed mb-10">
-            <span className="font-bold text-[#1A1A1A] block mb-2">ラーメンと旅行大好きエンジニア🍜✈️</span>
+            <span className="font-bold text-[#1A1A1A] block mb-2">ラーメンと旅行大好きエンジニア</span>
             電気電子工学の知見を活かしつつ、Webフロントエンドとモバイルアプリ開発を探求しています。
             SysHack2026にてCyberAgent賞を受賞した『muscloop』など、ユーザーの心を動かす滑らかで美しいUI/UXの実現を目指しています。
           </p>
