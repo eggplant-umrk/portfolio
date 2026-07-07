@@ -88,7 +88,7 @@ export default function MuscloopDetail() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <span className="text-sm font-bold text-blue-600 dark:text-blue-400 tracking-wider mb-4 block transition-colors duration-500">
+          <span className="text-sm font-bold text-accent tracking-wider mb-4 block transition-colors duration-500">
             SysHack2026 CyberAgent Award / 技育博 出展
           </span>
           <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-8 text-[#1A1A1A] dark:text-white transition-colors duration-500">
