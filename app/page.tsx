@@ -186,6 +186,8 @@ const SectionTitle = ({ index, title }: { index: string; title: string }) => (
 );
 
 const newsData = [
+  { date: "2026/07", text: "THE HACK 2026 参加中" },
+  { date: "2026/06/20", text: "技育祭九州 参加" },
   { date: "2026/05/30", text: "技育博2026 vol1 に出展・参加" },
   { date: "2026/05/15", text: "Matsuriba vol.14 参加" },
   { date: "2026/04/26", text: "技育祭東海 参加" },
