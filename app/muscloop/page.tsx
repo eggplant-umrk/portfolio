@@ -25,7 +25,7 @@ const ThemeToggle = () => {
       onClick={toggleTheme}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      className="fixed bottom-8 right-8 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-white/60 backdrop-blur-md border border-gray-200/50 shadow-sm dark:bg-[#1A1A1A]/60 dark:border-gray-800/50 text-[#1A1A1A] dark:text-gray-200 transition-colors overflow-hidden"
+      className="fixed bottom-8 right-8 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-white/90 dark:bg-[#1A1A1A]/90 md:backdrop-blur-md md:bg-white/60 md:dark:bg-[#1A1A1A]/60 border border-gray-200/50 shadow-sm dark:border-gray-800/50 text-[#1A1A1A] dark:text-gray-200 transition-colors overflow-hidden"
       aria-label="Toggle Dark Mode"
     >
       <motion.div
@@ -106,9 +106,11 @@ export default function MuscloopDetail() {
           className="w-full rounded-3xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1A1A1A] flex justify-center items-center aspect-video relative p-8 transition-colors duration-500"
         >
           <Image
-            src="/muscloop.png"
+            src="/muscloop.webp"
             alt="muscloop Pamphlet"
             fill
+            priority
+            sizes="(min-width: 1280px) 1280px, 100vw"
             className="object-contain p-4"
           />
         </motion.div>

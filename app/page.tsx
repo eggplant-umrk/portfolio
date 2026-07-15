@@ -25,7 +25,7 @@ const ThemeToggle = () => {
       onClick={toggleTheme}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      className="fixed bottom-8 right-8 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-white/60 backdrop-blur-md border border-gray-200/50 shadow-sm dark:bg-[#1A1A1A]/60 dark:border-gray-800/50 text-[#1A1A1A] dark:text-gray-200 transition-colors overflow-hidden"
+      className="fixed bottom-8 right-8 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-white/90 dark:bg-[#1A1A1A]/90 md:backdrop-blur-md md:bg-white/60 md:dark:bg-[#1A1A1A]/60 border border-gray-200/50 shadow-sm dark:border-gray-800/50 text-[#1A1A1A] dark:text-gray-200 transition-colors overflow-hidden"
       aria-label="Toggle Dark Mode"
     >
       <motion.div
@@ -75,7 +75,7 @@ const Header = ({ delayBase }: { delayBase: number }) => (
     initial={{ opacity: 0, y: -16 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.8, ease: "easeOut", delay: delayBase }}
-    className="fixed top-0 left-0 w-full z-40 px-8 md:px-24 py-5 flex items-center justify-between backdrop-blur-md bg-white/60 dark:bg-[#1A1A1A]/60 border-b border-gray-100 dark:border-gray-900 transition-colors duration-500"
+    className="fixed top-0 left-0 w-full z-40 px-8 md:px-24 py-5 flex items-center justify-between md:backdrop-blur-md bg-white/90 dark:bg-[#1A1A1A]/90 md:bg-white/60 md:dark:bg-[#1A1A1A]/60 border-b border-gray-100 dark:border-gray-900 transition-colors duration-500"
   >
     <a href="#" className="text-sm font-black tracking-tight text-[#1A1A1A] dark:text-white hover:text-accent dark:hover:text-accent transition-colors">
       RIKU UMEZAWA
@@ -269,11 +269,12 @@ export default function Home() {
       {/* ＝＝＝ ヒーローセクション ＝＝＝ */}
       <main className="relative min-h-screen flex flex-col w-full overflow-hidden pt-12 pb-8">
 
-        {/* 演出1：背景の光のぼかし */}
-        <div className="absolute inset-0 pointer-events-none z-0">
+        {/* 演出1：背景の光のぼかし（blurはPC(md以上)限定。スマホは軽量なグラデーションで代替） */}
+        <div className="hidden md:block absolute inset-0 pointer-events-none z-0">
           <div className="absolute -top-[20%] -right-[10%] w-[50vw] h-[50vw] rounded-full bg-gray-200/60 dark:bg-white/5 blur-[120px] transition-colors duration-500" />
           <div className="absolute -bottom-[20%] -left-[10%] w-[40vw] h-[40vw] rounded-full bg-gray-200/60 dark:bg-white/5 blur-[120px] transition-colors duration-500" />
         </div>
+        <div className="md:hidden hero-glow-mobile absolute inset-0 pointer-events-none z-0 transition-colors duration-500" />
 
         {/* 演出2：背景の巨大透かし文字（スクロールでパララックス） */}
         <motion.div
@@ -428,9 +429,10 @@ export default function Home() {
             <Link href="/muscloop" className="w-full lg:w-1/2 group">
               <div className="rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 bg-[#FAFAFA] dark:bg-[#111111] flex justify-center items-center p-8 aspect-video relative transition-colors duration-500">
                 <Image
-                  src="/muscloop.png"
+                  src="/muscloop.webp"
                   alt="muscloop Pamphlet"
                   fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
                   className="object-contain p-4 group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
               </div>
