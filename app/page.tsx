@@ -244,6 +244,9 @@ const SectionTitle = ({ index, title }: { index: string; title: string }) => (
 
 const newsData = [
   { date: "2026/07", text: "THE HACK 2026 参加中" },
+  { date: "2026/07/17", text: "29Tech vol.2 参加" },
+  { date: "2026/07/11", text: "技育祭関西 参加" },
+  { date: "2026/07/09", text: "Matsuriba vol.15 参加" },
   { date: "2026/06/20", text: "技育祭九州 参加" },
   { date: "2026/05/30", text: "技育博2026 vol1 に出展・参加" },
   { date: "2026/05/15", text: "Matsuriba vol.14 参加" },
@@ -442,7 +445,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
-                className="flex flex-col sm:flex-row sm:items-center py-6 border-b border-gray-200 dark:border-gray-800 group hover:bg-white dark:hover:bg-[#1A1A1A] transition-colors duration-300 px-4 -mx-4 rounded-lg"
+                className="flex flex-col sm:flex-row sm:items-center py-6 border-b border-gray-200 dark:border-gray-800 group hover:bg-white dark:hover:bg-[#1A1A1A] transition-colors duration-300 px-4 -mx-4 rounded-lg cursor-default"
               >
                 <span className="text-gray-400 dark:text-gray-500 font-medium text-sm sm:w-32 mb-2 sm:mb-0 shrink-0 tracking-wider transition-colors duration-500">
                   {item.date}
