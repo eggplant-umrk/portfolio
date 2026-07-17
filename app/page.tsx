@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -70,29 +70,86 @@ const navLinks = [
   { label: "Contact", href: "#contact" },
 ];
 
-const Header = ({ delayBase }: { delayBase: number }) => (
-  <motion.header
-    initial={{ opacity: 0, y: -16 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.8, ease: "easeOut", delay: delayBase }}
-    className="fixed top-0 left-0 w-full z-40 px-8 md:px-24 py-5 flex items-center justify-between md:backdrop-blur-md bg-white/90 dark:bg-[#1A1A1A]/90 md:bg-white/60 md:dark:bg-[#1A1A1A]/60 border-b border-gray-100 dark:border-gray-900 transition-colors duration-500"
-  >
-    <a href="#" className="text-sm font-black tracking-tight text-[#1A1A1A] dark:text-white hover:text-accent dark:hover:text-accent transition-colors">
-      RIKU UMEZAWA
-    </a>
-    <nav className="flex items-center gap-5 md:gap-10">
-      {navLinks.map((link) => (
-        <a
-          key={link.href}
-          href={link.href}
-          className="text-[11px] md:text-xs font-bold tracking-[0.2em] uppercase text-gray-500 dark:text-gray-400 hover:text-accent dark:hover:text-accent transition-colors"
-        >
-          {link.label}
-        </a>
-      ))}
-    </nav>
-  </motion.header>
-);
+const Header = ({ delayBase }: { delayBase: number }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  return (
+    <motion.header
+      initial={{ opacity: 0, y: -16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut", delay: delayBase }}
+      className="fixed top-0 left-0 w-full z-40 px-6 md:px-24 py-5 flex items-center justify-between md:backdrop-blur-md bg-white/90 dark:bg-[#1A1A1A]/90 md:bg-white/60 md:dark:bg-[#1A1A1A]/60 border-b border-gray-100 dark:border-gray-900 transition-colors duration-500"
+    >
+      <a href="#" className="text-xs sm:text-sm font-black tracking-tight whitespace-nowrap text-[#1A1A1A] dark:text-white hover:text-accent dark:hover:text-accent transition-colors">
+        RIKU UMEZAWA
+      </a>
+
+      {/* デスクトップ用ナビ（md以上のみ表示） */}
+      <nav className="hidden md:flex items-center gap-10">
+        {navLinks.map((link) => (
+          <a
+            key={link.href}
+            href={link.href}
+            className="text-xs font-bold tracking-[0.2em] uppercase text-gray-500 dark:text-gray-400 hover:text-accent dark:hover:text-accent transition-colors"
+          >
+            {link.label}
+          </a>
+        ))}
+      </nav>
+
+      {/* ハンバーガーボタン（md未満のみ表示） */}
+      <button
+        onClick={() => setIsMenuOpen((prev) => !prev)}
+        aria-label={isMenuOpen ? "メニューを閉じる" : "メニューを開く"}
+        aria-expanded={isMenuOpen}
+        className="md:hidden relative z-50 flex flex-col justify-center items-center gap-[5px] w-8 h-8 shrink-0 text-[#1A1A1A] dark:text-white"
+      >
+        <motion.span
+          animate={{ rotate: isMenuOpen ? 45 : 0, y: isMenuOpen ? 6 : 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="block w-6 h-[2px] bg-current"
+        />
+        <motion.span
+          animate={{ opacity: isMenuOpen ? 0 : 1 }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
+          className="block w-6 h-[2px] bg-current"
+        />
+        <motion.span
+          animate={{ rotate: isMenuOpen ? -45 : 0, y: isMenuOpen ? -6 : 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="block w-6 h-[2px] bg-current"
+        />
+      </button>
+
+      {/* モバイル用フルスクリーンメニュー */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.nav
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="md:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-8 bg-white dark:bg-[#1A1A1A] transition-colors duration-500"
+          >
+            {navLinks.map((link, i) => (
+              <motion.a
+                key={link.href}
+                href={link.href}
+                onClick={() => setIsMenuOpen(false)}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 + i * 0.06 }}
+                className="text-2xl font-bold tracking-[0.2em] uppercase text-[#1A1A1A] dark:text-white hover:text-accent dark:hover:text-accent transition-colors"
+              >
+                {link.label}
+              </motion.a>
+            ))}
+          </motion.nav>
+        )}
+      </AnimatePresence>
+    </motion.header>
+  );
+};
 
 // ＝＝＝ フィルムグレイン（画面全体の極薄ノイズ質感） ＝＝＝
 const Grain = () => (
@@ -122,7 +179,7 @@ const SplitText = ({ text, delay = 0 }: { text: string; delay?: number }) => (
 );
 
 // ＝＝＝ 無限マーキー（塗り文字と縁取り文字が交互に流れる帯） ＝＝＝
-const marqueeItems = ["FRONT-END DEVELOPER", "UI / UX DESIGN", "REACT NATIVE", "NEXT.JS", "RAMEN & TRAVEL"];
+const marqueeItems = ["FRONT-END DEVELOPER", "UI / UX DESIGN", "REACT NATIVE", "FIGMA", "RAMEN"];
 
 const Marquee = () => (
   <div className="w-full overflow-hidden border-y border-gray-200 dark:border-gray-800 py-5 md:py-7 bg-white dark:bg-[#1A1A1A] transition-colors duration-500">
