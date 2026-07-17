@@ -327,7 +327,7 @@ export default function Home() {
       )}
 
       {/* ＝＝＝ ヒーローセクション ＝＝＝ */}
-      <main className="relative min-h-screen flex flex-col w-full overflow-hidden pt-12 pb-8">
+      <main className="relative min-h-screen flex flex-col w-full overflow-hidden pt-24 md:pt-20 pb-8">
 
         {/* 演出1：背景の光のぼかし（blurはPC(md以上)限定。スマホは軽量なグラデーションで代替） */}
         <div className="hidden md:block absolute inset-0 pointer-events-none z-0">
@@ -445,16 +445,13 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
-                className="flex flex-col sm:flex-row sm:items-center py-6 border-b border-gray-200 dark:border-gray-800 group hover:bg-white dark:hover:bg-[#1A1A1A] transition-colors duration-300 px-4 -mx-4 rounded-lg cursor-default"
+                className="flex flex-col sm:flex-row sm:items-center py-6 border-b border-gray-200 dark:border-gray-800 hover:bg-white dark:hover:bg-[#1A1A1A] transition-colors duration-300 px-4 -mx-4 rounded-lg cursor-default"
               >
                 <span className="text-gray-400 dark:text-gray-500 font-medium text-sm sm:w-32 mb-2 sm:mb-0 shrink-0 tracking-wider transition-colors duration-500">
                   {item.date}
                 </span>
-                <span className="text-[#1A1A1A] dark:text-gray-300 font-medium group-hover:text-accent dark:group-hover:text-accent transition-colors">
+                <span className="text-[#1A1A1A] dark:text-gray-300 font-medium transition-colors">
                   {item.text}
-                </span>
-                <span className="hidden sm:block ml-auto text-accent opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-                  →
                 </span>
               </motion.div>
             ))}
