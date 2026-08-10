@@ -243,7 +243,9 @@ const SectionTitle = ({ index, title }: { index: string; title: string }) => (
 );
 
 const newsData = [
-  { date: "2026/07", text: "THE HACK 2026 参加中" },
+  { date: "2026/08/09", text: "THE HACK 2026 東海予選1位通過" },
+  { date: "2026/08/08", text: "100program 10期 参加" },
+  { date: "2026/08/01", text: "STECH CONNECT TOKAI 2026 参加" },
   { date: "2026/07/17", text: "29Tech vol.2 参加" },
   { date: "2026/07/11", text: "技育祭関西 参加" },
   { date: "2026/07/09", text: "Matsuriba vol.15 参加" },
@@ -515,6 +517,51 @@ export default function Home() {
 
               <Link
                 href="/muscloop"
+                className="text-[#1A1A1A] dark:text-white font-bold border-b-2 border-[#1A1A1A] dark:border-white pb-1 hover:text-accent dark:hover:text-accent hover:border-accent dark:hover:border-accent transition-colors"
+              >
+                Read Case Study →
+              </Link>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="flex flex-col lg:flex-row gap-12 items-center mt-24 pt-24 border-t border-gray-100 dark:border-gray-900 transition-colors duration-500"
+          >
+            <Link href="/tsunagu" className="w-full lg:w-1/2 group">
+              <div className="rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 bg-[#FAFAFA] dark:bg-[#111111] flex justify-center items-center p-8 aspect-video relative transition-colors duration-500">
+                <Image
+                  src="/tsunagu-hero.png"
+                  alt="TSUNAGU メインビジュアル"
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-contain p-4 group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+              </div>
+            </Link>
+
+            <div className="w-full lg:w-1/2 flex flex-col items-start">
+              <span className="text-sm font-bold text-accent tracking-wider mb-2 transition-colors duration-500">
+                THE HACK 2026 東海予選 1位通過
+              </span>
+              <h4 className="text-4xl font-black mb-4 text-[#1A1A1A] dark:text-white transition-colors duration-500">TSUNAGU</h4>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6 transition-colors duration-500">
+                「通信が途絶えても、現場の状況は途絶えない」——災害時の避難所状況を収集・可視化するOffline First型の報告プラットフォーム。通信断時はLoRaで最低限の状況を本部へ届けます。
+              </p>
+
+              <div className="flex flex-wrap gap-2 mb-8">
+                {["React 19", "Vite", "FastAPI", "PostgreSQL", "AWS", "Terraform", "LoRa (ESP32)"].map((tech) => (
+                  <span key={tech} className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm px-4 py-1.5 rounded-full font-medium transition-colors duration-500">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+
+              <Link
+                href="/tsunagu"
                 className="text-[#1A1A1A] dark:text-white font-bold border-b-2 border-[#1A1A1A] dark:border-white pb-1 hover:text-accent dark:hover:text-accent hover:border-accent dark:hover:border-accent transition-colors"
               >
                 Read Case Study →
