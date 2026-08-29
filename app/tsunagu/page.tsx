@@ -89,7 +89,7 @@ export default function TsunaguDetail() {
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
           <span className="text-sm font-bold text-accent tracking-wider mb-4 block transition-colors duration-500">
-            THE HACK 2026 東海予選 1位通過
+            THE HACK 2026 東海予選1位通過 → 本選 デジタルフォルン賞・副大賞 受賞
           </span>
           <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-8 text-[#1A1A1A] dark:text-white transition-colors duration-500">
             TSUNAGU
@@ -133,7 +133,7 @@ export default function TsunaguDetail() {
               TSUNAGUは、災害時に避難所の状況を収集・可視化するOffline First型の報告プラットフォームです。「通信が途絶えても、現場の状況は途絶えない」をコンセプトに、通常時はスマートフォンやPCから詳細な現場報告を送信し、通信が途絶えた場合は端末内に報告を保存して復旧後に自動で再送します。それでも通信が長時間回復しない場合は、LoRaという長距離無線を使って、最低限の状況だけを本部へ届けます。
             </p>
             <p>
-              THE HACK 2026(東海予選)で1位を通過しました。
+              THE HACK 2026(東海予選)で1位を通過し、本選では「デジタルフォルン賞」「副大賞」をダブル受賞しました。受賞特典として、2026年11月24日にTOKYO FMホールで開催されるVORN Challenge 2026本戦へのシード出場権も獲得しています。
             </p>
           </div>
         </motion.section>

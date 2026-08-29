@@ -547,7 +547,7 @@ export default function Home() {
 
             <div className="w-full lg:w-1/2 flex flex-col items-start">
               <span className="text-sm font-bold text-accent tracking-wider mb-2 transition-colors duration-500">
-                THE HACK 2026 東海予選 1位通過
+                THE HACK 2026 東海予選1位通過 → 本選 デジタルフォルン賞・副大賞 受賞
               </span>
               <h4 className="text-4xl font-black mb-4 text-[#1A1A1A] dark:text-white transition-colors duration-500">TSUNAGU</h4>
               <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6 transition-colors duration-500">
