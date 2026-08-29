@@ -26,9 +26,9 @@ export default function RootLayout({
   return (
     <html
       lang="ja"
-      className={`${inter.variable} ${notoSansJP.variable} h-full antialiased scroll-smooth`}
+      className={`${inter.variable} ${notoSansJP.variable} h-full antialiased scroll-smooth dark`}
     >
-      <body className="min-h-full flex flex-col bg-[#FAFAFA] text-[#1A1A1A] font-sans">
+      <body className="min-h-full flex flex-col bg-white dark:bg-[#1A1A1A] text-[#1A1A1A] dark:text-[#FAFAFA] font-sans transition-colors duration-500">
         <CustomCursor /> {/* サイト全体にカーソルを配置 */}
         {children}
       </body>

@@ -64,9 +64,9 @@ const ThemeToggle = () => {
 
 // ＝＝＝ 固定ナビゲーションヘッダー ＝＝＝
 const navLinks = [
+  { label: "About", href: "#about" },
   { label: "News", href: "#news" },
   { label: "Works", href: "#projects" },
-  { label: "About", href: "#about" },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -378,9 +378,12 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: delayBase + 0.6 }}
           >
-            <h2 className="text-xl md:text-2xl font-medium text-gray-500 dark:text-gray-400 mb-8 transition-colors duration-500">
+            <h2 className="text-xl md:text-2xl font-medium text-gray-500 dark:text-gray-400 mb-2 transition-colors duration-500">
               Front-End Developer
             </h2>
+            <span className="inline-block text-xs font-bold tracking-wider text-accent bg-accent/10 dark:bg-accent/15 border border-accent/30 px-3 py-1.5 rounded-full mb-8 transition-colors duration-500">
+              愛知工業大学 システム工学研究会・STECH所属
+            </span>
           </motion.div>
 
           <motion.div
@@ -390,8 +393,7 @@ export default function Home() {
           >
             <p className="text-gray-600 dark:text-gray-300 max-w-lg leading-relaxed transition-colors duration-500">
               <span className="font-bold text-[#1A1A1A] dark:text-white block mb-2 transition-colors duration-500">ラーメンと旅行大好きエンジニア</span>
-              電気電子工学の知見を活かしつつ、Webフロントエンドとモバイルアプリ開発を探求しています。
-              SysHack2026でCyberAgent賞を受賞した『muscloop』、THE HACK 2026本選でデジタルフォルン賞・副大賞をW受賞した『TSUNAGU』など、ユーザーの心を動かす滑らかで美しいUI/UXの実現を目指す一方、要件定義やRaspberry Piを用いたサーバー領域の学習にも取り組み、開発を上流から下流まで見通せるエンジニアを目指しています。
+              <span className="whitespace-nowrap">SysHack2026 CyberAgent賞</span>『<span className="whitespace-nowrap">muscloop</span>』、<span className="whitespace-nowrap">THE HACK 2026</span> <span className="whitespace-nowrap">東海予選1位</span>・<span className="whitespace-nowrap">本選デジタルフォルン賞</span>・<span className="whitespace-nowrap">副大賞</span>『<span className="whitespace-nowrap">TSUNAGU</span>』
             </p>
           </motion.div>
         </motion.div>
@@ -436,10 +438,59 @@ export default function Home() {
       {/* ＝＝＝ マーキー帯 ＝＝＝ */}
       <Marquee />
 
+      {/* ＝＝＝ About（自己紹介）セクション ＝＝＝ */}
+      <section id="about" className="w-full px-8 md:px-24 py-32 bg-[#FAFAFA] dark:bg-[#111111] scroll-mt-16 transition-colors duration-500">
+        <div className="max-w-7xl mx-auto">
+          <SectionTitle index="01" title="About Me" />
+          <div className="flex flex-col lg:flex-row gap-16">
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="w-full lg:w-1/2"
+          >
+            <div className="space-y-6 text-gray-600 dark:text-gray-300 leading-relaxed font-noto transition-colors duration-500">
+              <p>
+                愛知工業大学で電気電子工学を専攻している29卒です。大学ではC言語や物理法則などハードウェア寄りの領域を学んでいますが、高校は情報デザイン学科を卒業しておりユーザーの目に直接触れ、体験を根本から変えることができるWebフロントエンドやUI/UXデザインの世界に強く惹かれました。
+              </p>
+              <p>
+                現在はReact Nativeを中心に、Figmaを用いたデザインの基礎設計から実装まで一貫して手を動かす開発を探求しています。あわせてTSUNAGU開発では要件定義から携わり、個人ではRaspberry Piを使ってサーバー領域の学習にも手を出しています。
+              </p>
+              <p>
+                チーム「CPY」としてSysHack2026や技育博に出場し、プロダクトを形にする楽しさを知りました。THE HACK 2026本選ではTSUNAGUでデジタルフォルン賞・副大賞をW受賞し、VORN Challenge 2026本戦への出場権も獲得しています。2026年8月にはSTECHにも加入し、今後は東海・関東・関西など各地の技術イベントにも積極的に足を運び、エンジニアとしての視野と技術力をさらに広げていきたいと考えています。
+              </p>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            className="w-full lg:w-1/2 flex flex-col gap-8"
+          >
+            <div>
+              <h4 className="text-lg font-bold text-[#1A1A1A] dark:text-white mb-6 border-b border-gray-200 dark:border-gray-800 pb-2 transition-colors duration-500">Skills & Technologies</h4>
+              <div className="flex flex-wrap gap-3">
+                {["Figma", "React Native (Expo)", "React", "Firebase", "AWS", "Raspberry Pi", "GitHub", "C", "Python"].map((skill) => (
+                  <span key={skill} className="bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm px-4 py-2 rounded-lg font-medium shadow-sm hover:border-accent dark:hover:border-accent transition-colors duration-300">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
+          </div>
+        </div>
+      </section>
+
       {/* ＝＝＝ ニュース＆アクティビティ セクション ＝＝＝ */}
-      <section id="news" className="w-full px-8 md:px-24 py-24 bg-[#FAFAFA] dark:bg-[#111111] scroll-mt-16 transition-colors duration-500">
+      <section id="news" className="w-full px-8 md:px-24 py-24 bg-white dark:bg-[#1A1A1A] scroll-mt-16 transition-colors duration-500">
         <div className="max-w-3xl mx-auto">
-          <SectionTitle index="01" title="Activity & News" />
+          <SectionTitle index="02" title="Activity & News" />
 
           <div className="flex flex-col border-t border-gray-200 dark:border-gray-800 transition-colors duration-500">
             {displayNews.map((item, index) => (
@@ -449,7 +500,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
-                className="flex flex-col sm:flex-row sm:items-center py-6 border-b border-gray-200 dark:border-gray-800 hover:bg-white dark:hover:bg-[#1A1A1A] transition-colors duration-300 px-4 -mx-4 rounded-lg cursor-default"
+                className="flex flex-col sm:flex-row sm:items-center py-6 border-b border-gray-200 dark:border-gray-800 hover:bg-[#FAFAFA] dark:hover:bg-[#111111] transition-colors duration-300 px-4 -mx-4 rounded-lg cursor-default"
               >
                 <span className="text-gray-400 dark:text-gray-500 font-medium text-sm sm:w-32 mb-2 sm:mb-0 shrink-0 tracking-wider transition-colors duration-500">
                   {item.date}
@@ -476,9 +527,9 @@ export default function Home() {
       </section>
 
       {/* ＝＝＝ プロジェクトセクション ＝＝＝ */}
-      <section id="projects" className="w-full px-8 md:px-24 py-32 bg-white dark:bg-[#1A1A1A] scroll-mt-16 transition-colors duration-500">
+      <section id="projects" className="w-full px-8 md:px-24 py-32 bg-[#FAFAFA] dark:bg-[#111111] scroll-mt-16 transition-colors duration-500">
         <div className="max-w-7xl mx-auto">
-          <SectionTitle index="02" title="Selected Works" />
+          <SectionTitle index="03" title="Selected Works" />
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -488,7 +539,7 @@ export default function Home() {
             className="flex flex-col lg:flex-row gap-12 items-center"
           >
             <Link href="/muscloop" className="w-full lg:w-1/2 group">
-              <div className="rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 bg-[#FAFAFA] dark:bg-[#111111] flex justify-center items-center p-8 aspect-video relative transition-colors duration-500">
+              <div className="rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1A1A1A] flex justify-center items-center p-8 aspect-video relative transition-colors duration-500">
                 <Image
                   src="/muscloop.webp"
                   alt="muscloop Pamphlet"
@@ -531,10 +582,10 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="flex flex-col lg:flex-row gap-12 items-center mt-24 pt-24 border-t border-gray-100 dark:border-gray-900 transition-colors duration-500"
+            className="flex flex-col lg:flex-row gap-12 items-center mt-24 pt-24 border-t border-gray-200 dark:border-gray-800 transition-colors duration-500"
           >
             <Link href="/tsunagu" className="w-full lg:w-1/2 group">
-              <div className="rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 bg-[#FAFAFA] dark:bg-[#111111] flex justify-center items-center p-8 aspect-video relative transition-colors duration-500">
+              <div className="rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1A1A1A] flex justify-center items-center p-8 aspect-video relative transition-colors duration-500">
                 <Image
                   src="/tsunagu-hero.png"
                   alt="TSUNAGU メインビジュアル"
@@ -573,55 +624,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ＝＝＝ About（自己紹介）セクション ＝＝＝ */}
-      <section id="about" className="w-full px-8 md:px-24 py-32 bg-[#FAFAFA] dark:bg-[#111111] scroll-mt-16 transition-colors duration-500">
-        <div className="max-w-7xl mx-auto">
-          <SectionTitle index="03" title="About Me" />
-          <div className="flex flex-col lg:flex-row gap-16">
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="w-full lg:w-1/2"
-          >
-            <div className="space-y-6 text-gray-600 dark:text-gray-300 leading-relaxed font-noto transition-colors duration-500">
-              <p>
-                愛知工業大学で電気電子工学を専攻している29卒です。大学ではC言語や物理法則などハードウェア寄りの領域を学んでいますが、高校は情報デザイン学科を卒業しておりユーザーの目に直接触れ、体験を根本から変えることができるWebフロントエンドやUI/UXデザインの世界に強く惹かれました。
-              </p>
-              <p>
-                現在はReact NativeやNext.jsを中心に、Figmaを用いたデザインの基礎設計から、Framer Motionを使った心地よいアニメーションの実装まで、技術とデザインの境界線を埋める開発を探求しています。
-              </p>
-              <p>
-                チーム「CPY」としてSysHack2026や技育博に出場し、プロダクトを形にする楽しさを知りました。今後は東海・関西・九州など各地の技術イベントにも積極的に足を運び、エンジニアとしての視野と技術力をさらに広げていきたいと考えています。
-              </p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-            className="w-full lg:w-1/2 flex flex-col gap-8"
-          >
-            <div>
-              <h4 className="text-lg font-bold text-[#1A1A1A] dark:text-white mb-6 border-b border-gray-200 dark:border-gray-800 pb-2 transition-colors duration-500">Skills & Technologies</h4>
-              <div className="flex flex-wrap gap-3">
-                {["Figma", "React Native (Expo)", "Next.js", "TypeScript", "React", "Firebase", "GitHub", "C", "Python"].map((skill) => (
-                  <span key={skill} className="bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm px-4 py-2 rounded-lg font-medium shadow-sm hover:border-accent dark:hover:border-accent transition-colors duration-300">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          </div>
-        </div>
-      </section>
-
       {/* ＝＝＝ フッター（コンタクトセクション） ＝＝＝ */}
       <footer id="contact" className="w-full px-8 md:px-24 pt-32 pb-12 bg-white dark:bg-[#1A1A1A] border-t border-gray-100 dark:border-gray-900 scroll-mt-16 transition-colors duration-500">
         <div className="max-w-7xl mx-auto">
@@ -639,11 +641,11 @@ export default function Home() {
 
           <div className="flex flex-col gap-6 mb-24 items-start">
 
-            <a href="https://x.com/eggplant_umrk?s=11&t=NqyCGbLtTWXP3ARiNEz16A" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-[#1A1A1A] dark:text-white hover:text-accent dark:hover:text-accent transition-colors group">
+            <a href="https://x.com/rikuumezawa" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-[#1A1A1A] dark:text-white hover:text-accent dark:hover:text-accent transition-colors group">
               <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" className="group-hover:scale-110 transition-transform">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
               </svg>
-              <span className="text-xl font-medium tracking-wide">eggplant__umrk</span>
+              <span className="text-xl font-medium tracking-wide">rikuumezawa</span>
             </a>
 
             <a href="https://github.com/eggplant-umrk" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-[#1A1A1A] dark:text-white hover:text-accent dark:hover:text-accent transition-colors group">
