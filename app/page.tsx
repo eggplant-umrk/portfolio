@@ -243,6 +243,8 @@ const SectionTitle = ({ index, title }: { index: string; title: string }) => (
 );
 
 const newsData = [
+  { date: "2026/08/28", text: "STECH に加入" },
+  { date: "2026/08/22", text: "THE HACK 2026 本選 デジタルフォルン賞・副大賞を受賞" },
   { date: "2026/08/09", text: "THE HACK 2026 東海予選1位通過" },
   { date: "2026/08/08", text: "100program 10期 参加" },
   { date: "2026/08/01", text: "STECH CONNECT TOKAI 2026 参加" },
