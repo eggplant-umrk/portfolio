@@ -391,7 +391,7 @@ export default function Home() {
             <p className="text-gray-600 dark:text-gray-300 max-w-lg leading-relaxed transition-colors duration-500">
               <span className="font-bold text-[#1A1A1A] dark:text-white block mb-2 transition-colors duration-500">ラーメンと旅行大好きエンジニア</span>
               電気電子工学の知見を活かしつつ、Webフロントエンドとモバイルアプリ開発を探求しています。
-              SysHack2026にてCyberAgent賞を受賞した『muscloop』など、ユーザーの心を動かす滑らかで美しいUI/UXの実現を目指しています。
+              SysHack2026でCyberAgent賞を受賞した『muscloop』、THE HACK 2026本選でデジタルフォルン賞・副大賞をW受賞した『TSUNAGU』など、ユーザーの心を動かす滑らかで美しいUI/UXの実現を目指す一方、要件定義やRaspberry Piを用いたサーバー領域の学習にも取り組み、開発を上流から下流まで見通せるエンジニアを目指しています。
             </p>
           </motion.div>
         </motion.div>
