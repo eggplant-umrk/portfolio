@@ -243,6 +243,7 @@ const SectionTitle = ({ index, title }: { index: string; title: string }) => (
 );
 
 const newsData = [
+  { date: "2026/09/09", text: "特定非営利活動法人NxTEND東海事業部所属" },
   { date: "2026/08/28", text: "STECH に加入" },
   { date: "2026/08/22", text: "THE HACK 2026 本選 デジタルフォルン賞・副大賞を受賞" },
   { date: "2026/08/09", text: "THE HACK 2026 東海予選1位通過" },
@@ -382,7 +383,7 @@ export default function Home() {
               Front-End Developer
             </h2>
             <span className="inline-block text-xs font-bold tracking-wider text-accent bg-accent/10 dark:bg-accent/15 border border-accent/30 px-3 py-1.5 rounded-full mb-8 transition-colors duration-500">
-              愛知工業大学 システム工学研究会・STECH所属
+              愛知工業大学 システム工学研究会・STECH所属・NxTEND東海事業部
             </span>
           </motion.div>
 
