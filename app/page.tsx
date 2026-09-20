@@ -243,6 +243,7 @@ const SectionTitle = ({ index, title }: { index: string; title: string }) => (
 );
 
 const newsData = [
+  { date: "2026/09/19", text: "100program 優秀インタビュー賞・オーディエンス賞×3 受賞" },
   { date: "2026/09/09", text: "特定非営利活動法人NxTEND東海事業部所属" },
   { date: "2026/08/28", text: "STECH に加入" },
   { date: "2026/08/22", text: "THE HACK 2026 本選 デジタルフォルン賞・副大賞を受賞" },
@@ -394,7 +395,7 @@ export default function Home() {
           >
             <p className="text-gray-600 dark:text-gray-300 max-w-lg leading-relaxed transition-colors duration-500">
               <span className="font-bold text-[#1A1A1A] dark:text-white block mb-2 transition-colors duration-500">ラーメンと旅行大好きエンジニア</span>
-              <span className="whitespace-nowrap">SysHack2026 CyberAgent賞</span>『<span className="whitespace-nowrap">muscloop</span>』、<span className="whitespace-nowrap">THE HACK 2026</span> <span className="whitespace-nowrap">東海予選1位</span>・<span className="whitespace-nowrap">本選デジタルフォルン賞</span>・<span className="whitespace-nowrap">副大賞</span>『<span className="whitespace-nowrap">TSUNAGU</span>』
+              <span className="whitespace-nowrap">SysHack2026 CyberAgent賞『muscloop』</span>、<span className="whitespace-nowrap">THE HACK 2026 東海予選1位・本選デジタルフォルン賞・副大賞『TSUNAGU』</span>、<span className="whitespace-nowrap">100program 優秀インタビュー賞・オーディエンス賞『KOKUDO』</span>、<span className="whitespace-nowrap">100program オーディエンス賞×2『taleglot』</span>
             </p>
           </motion.div>
         </motion.div>
@@ -539,6 +540,93 @@ export default function Home() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="flex flex-col lg:flex-row gap-12 items-center"
           >
+            <Link href="/tsunagu" className="w-full lg:w-1/2 group">
+              <div className="rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1A1A1A] flex justify-center items-center p-8 aspect-video relative transition-colors duration-500">
+                <Image
+                  src="/tsunagu-hero.png"
+                  alt="TSUNAGU メインビジュアル"
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-contain p-4 group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+              </div>
+            </Link>
+
+            <div className="w-full lg:w-1/2 flex flex-col items-start">
+              <span className="text-sm font-bold text-accent tracking-wider mb-2 transition-colors duration-500">
+                THE HACK 2026 東海予選1位通過 → 本選 デジタルフォルン賞・副大賞 受賞
+              </span>
+              <h4 className="text-4xl font-black mb-4 text-[#1A1A1A] dark:text-white transition-colors duration-500">TSUNAGU</h4>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6 transition-colors duration-500">
+                「通信が途絶えても、現場の状況は途絶えない」——災害時の避難所状況を収集・可視化するOffline First型の報告プラットフォーム。通信断時はLoRaで最低限の状況を本部へ届けます。
+              </p>
+
+              <div className="flex flex-wrap gap-2 mb-8">
+                {["React 19", "Vite", "FastAPI", "PostgreSQL", "AWS", "Terraform", "LoRa (ESP32)"].map((tech) => (
+                  <span key={tech} className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm px-4 py-1.5 rounded-full font-medium transition-colors duration-500">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+
+              <Link
+                href="/tsunagu"
+                className="text-[#1A1A1A] dark:text-white font-bold border-b-2 border-[#1A1A1A] dark:border-white pb-1 hover:text-accent dark:hover:text-accent hover:border-accent dark:hover:border-accent transition-colors"
+              >
+                Read Case Study →
+              </Link>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="flex flex-col lg:flex-row gap-12 items-center mt-24 pt-24 border-t border-gray-200 dark:border-gray-800 transition-colors duration-500"
+          >
+            <div className="w-full lg:w-1/2 group">
+              <div className="rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1A1A1A] flex justify-center items-center p-8 aspect-video relative transition-colors duration-500">
+                <Image
+                  src="/KOKUDO_feature_a.png"
+                  alt="KOKUDO メインビジュアル"
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-contain p-4 group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+              </div>
+            </div>
+
+            <div className="w-full lg:w-1/2 flex flex-col items-start">
+              <span className="text-sm font-bold text-accent tracking-wider mb-2 transition-colors duration-500">
+                100program 優秀インタビュー賞・オーディエンス賞 受賞
+              </span>
+              <h4 className="text-4xl font-black mb-4 text-[#1A1A1A] dark:text-white transition-colors duration-500">KOKUDO</h4>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6 transition-colors duration-500">
+                実際に走った距離を全国の国道に重ね、キャラクターとともに目標期日までの完走を目指す、ランニング・ウォーキング記録アプリです。
+              </p>
+
+              <div className="flex flex-wrap gap-2 mb-8">
+                {["Flutter (Dart)", "MapLibre GL", "geolocator", "health", "SQLite (sqflite)", "Firebase Authentication", "Cloud Firestore", "Terraform"].map((tech) => (
+                  <span key={tech} className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm px-4 py-1.5 rounded-full font-medium transition-colors duration-500">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+
+              <span className="text-[#1A1A1A] dark:text-white font-bold border-b-2 border-[#1A1A1A] dark:border-white pb-1">
+                Preparation...
+              </span>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="flex flex-col lg:flex-row gap-12 items-center mt-24 pt-24 border-t border-gray-200 dark:border-gray-800 transition-colors duration-500"
+          >
             <Link href="/muscloop" className="w-full lg:w-1/2 group">
               <div className="rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1A1A1A] flex justify-center items-center p-8 aspect-video relative transition-colors duration-500">
                 <Image
@@ -585,41 +673,38 @@ export default function Home() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="flex flex-col lg:flex-row gap-12 items-center mt-24 pt-24 border-t border-gray-200 dark:border-gray-800 transition-colors duration-500"
           >
-            <Link href="/tsunagu" className="w-full lg:w-1/2 group">
+            <div className="w-full lg:w-1/2 group">
               <div className="rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1A1A1A] flex justify-center items-center p-8 aspect-video relative transition-colors duration-500">
                 <Image
-                  src="/tsunagu-hero.png"
-                  alt="TSUNAGU メインビジュアル"
+                  src="/taleglot.png"
+                  alt="Taleglot メインビジュアル"
                   fill
                   sizes="(min-width: 1024px) 50vw, 100vw"
                   className="object-contain p-4 group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
               </div>
-            </Link>
+            </div>
 
             <div className="w-full lg:w-1/2 flex flex-col items-start">
               <span className="text-sm font-bold text-accent tracking-wider mb-2 transition-colors duration-500">
-                THE HACK 2026 東海予選1位通過 → 本選 デジタルフォルン賞・副大賞 受賞
+                100program オーディエンス賞×2 受賞
               </span>
-              <h4 className="text-4xl font-black mb-4 text-[#1A1A1A] dark:text-white transition-colors duration-500">TSUNAGU</h4>
+              <h4 className="text-4xl font-black mb-4 text-[#1A1A1A] dark:text-white transition-colors duration-500">Taleglot</h4>
               <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6 transition-colors duration-500">
-                「通信が途絶えても、現場の状況は途絶えない」——災害時の避難所状況を収集・可視化するOffline First型の報告プラットフォーム。通信断時はLoRaで最低限の状況を本部へ届けます。
+                言語と文化を学べるインタラクティブ絵本。タイに実在する民話を、絵本のように読み進めながらタイ語にふれられる学習アプリです。
               </p>
 
               <div className="flex flex-wrap gap-2 mb-8">
-                {["React 19", "Vite", "FastAPI", "PostgreSQL", "AWS", "Terraform", "LoRa (ESP32)"].map((tech) => (
+                {["React", "Vite", "JavaScript", "localStorage", "HTML / CSS"].map((tech) => (
                   <span key={tech} className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm px-4 py-1.5 rounded-full font-medium transition-colors duration-500">
                     {tech}
                   </span>
                 ))}
               </div>
 
-              <Link
-                href="/tsunagu"
-                className="text-[#1A1A1A] dark:text-white font-bold border-b-2 border-[#1A1A1A] dark:border-white pb-1 hover:text-accent dark:hover:text-accent hover:border-accent dark:hover:border-accent transition-colors"
-              >
-                Read Case Study →
-              </Link>
+              <span className="text-[#1A1A1A] dark:text-white font-bold border-b-2 border-[#1A1A1A] dark:border-white pb-1">
+                Preparation...
+              </span>
             </div>
           </motion.div>
         </div>
