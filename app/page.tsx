@@ -243,6 +243,7 @@ const SectionTitle = ({ index, title }: { index: string; title: string }) => (
 );
 
 const newsData = [
+  { date: "2026/09/29", text: "HACK STAGE 3 最優秀賞 受賞" },
   { date: "2026/09/19", text: "100program 優秀インタビュー賞・オーディエンス賞×3 受賞" },
   { date: "2026/09/09", text: "特定非営利活動法人NxTEND東海事業部所属" },
   { date: "2026/08/28", text: "STECH に加入" },
@@ -384,7 +385,10 @@ export default function Home() {
               Front-End Developer
             </h2>
             <span className="inline-block text-xs font-bold tracking-wider text-accent bg-accent/10 dark:bg-accent/15 border border-accent/30 px-3 py-1.5 rounded-full mb-8 transition-colors duration-500">
-              愛知工業大学 システム工学研究会・STECH所属・NxTEND東海事業部
+              <span className="whitespace-nowrap">愛知工業大学</span>{" "}
+              <span className="whitespace-nowrap">システム工学研究会・</span>
+              <span className="whitespace-nowrap">STECH所属・</span>
+              <span className="whitespace-nowrap">NxTEND東海事業部</span>
             </span>
           </motion.div>
 
@@ -395,7 +399,37 @@ export default function Home() {
           >
             <p className="text-gray-600 dark:text-gray-300 max-w-lg leading-relaxed transition-colors duration-500">
               <span className="font-bold text-[#1A1A1A] dark:text-white block mb-2 transition-colors duration-500">ラーメンと旅行大好きエンジニア</span>
-              <span className="whitespace-nowrap">SysHack2026 CyberAgent賞『muscloop』</span>、<span className="whitespace-nowrap">THE HACK 2026 東海予選1位・本選デジタルフォルン賞・副大賞『TSUNAGU』</span>、<span className="whitespace-nowrap">100program 優秀インタビュー賞・オーディエンス賞『KOKUDO』</span>、<span className="whitespace-nowrap">100program オーディエンス賞×2『taleglot』</span>
+              {/* 実績ごとに block で必ず改行し、実績の中は意味の塊ごとに nowrap で囲んで塊の間でだけ折り返す。
+                  塊が長すぎるとスマホ幅で右にはみ出すため、1塊は短く保ち、「・」「、」は行頭に来ないよう直前の塊に含める */}
+              <span className="block">
+                <span className="whitespace-nowrap">SysHack2026</span>{" "}
+                <span className="whitespace-nowrap">CyberAgent賞</span>
+                <span className="whitespace-nowrap">『muscloop』、</span>
+              </span>
+              <span className="block">
+                <span className="whitespace-nowrap">THE HACK 2026</span>{" "}
+                <span className="whitespace-nowrap">東海予選1位・</span>
+                <span className="whitespace-nowrap">本選デジタルフォルン賞・</span>
+                <span className="whitespace-nowrap">副大賞</span>
+                <span className="whitespace-nowrap">『TSUNAGU』、</span>
+              </span>
+              <span className="block">
+                <span className="whitespace-nowrap">100program</span>{" "}
+                <span className="whitespace-nowrap">優秀インタビュー賞・</span>
+                <span className="whitespace-nowrap">オーディエンス賞</span>
+                <span className="whitespace-nowrap">『KOKUDO』、</span>
+              </span>
+              <span className="block">
+                <span className="whitespace-nowrap">100program</span>{" "}
+                <span className="whitespace-nowrap">オーディエンス賞×2</span>
+                <span className="whitespace-nowrap">『taleglot』、</span>
+              </span>
+              <span className="block">
+                <span className="whitespace-nowrap">HACK STAGE 3</span>{" "}
+                <span className="whitespace-nowrap">最優秀賞</span>{" "}
+                <span className="whitespace-nowrap">受賞</span>
+                <span className="whitespace-nowrap">『TrailDrop』</span>
+              </span>
             </p>
           </motion.div>
         </motion.div>
@@ -617,6 +651,51 @@ export default function Home() {
               <span className="text-[#1A1A1A] dark:text-white font-bold border-b-2 border-[#1A1A1A] dark:border-white pb-1">
                 Preparation...
               </span>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="flex flex-col lg:flex-row gap-12 items-center mt-24 pt-24 border-t border-gray-200 dark:border-gray-800 transition-colors duration-500"
+          >
+            <Link href="/traildrop" className="w-full lg:w-1/2 group">
+              <div className="rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1A1A1A] flex justify-center items-center p-8 aspect-video relative transition-colors duration-500">
+                <Image
+                  src="/traildrop-hero.png"
+                  alt="TrailDrop メインビジュアル"
+                  fill
+                  sizes="(min-width: 1024px) 50vw, 100vw"
+                  className="object-contain p-4 group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+              </div>
+            </Link>
+
+            <div className="w-full lg:w-1/2 flex flex-col items-start">
+              <span className="text-sm font-bold text-accent tracking-wider mb-2 transition-colors duration-500">
+                HACK STAGE 3 最優秀賞受賞
+              </span>
+              <h4 className="text-4xl font-black mb-4 text-[#1A1A1A] dark:text-white transition-colors duration-500">TrailDrop</h4>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6 transition-colors duration-500">
+                目的地へ向かう旅行者のルートと通過時間から、その途中で受け取れる地域の商品を見つけ、予約・受取までをつなげるサービス。旅行者は出発地・目的地・出発時間を入力すると、ルート上の地域商品を確認でき、予約後に発行されるQRコードを使って道の駅などの無人受取ロッカーで商品を受け取れる。「わざわざ寄る」のではなく「通り道だから寄れる」ことで、いつもの旅に地域との接点をつくることを目指す。
+              </p>
+
+              <div className="flex flex-wrap gap-2 mb-8">
+                {["React", "Vite", "Tailwind CSS", "Python", "FastAPI", "Supabase", "PostgreSQL", "Google Routes API", "Google Maps", "qrcode.react"].map((tech) => (
+                  <span key={tech} className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm px-4 py-1.5 rounded-full font-medium transition-colors duration-500">
+                    {tech}
+                  </span>
+                ))}
+              </div>
+
+              <Link
+                href="/traildrop"
+                className="text-[#1A1A1A] dark:text-white font-bold border-b-2 border-[#1A1A1A] dark:border-white pb-1 hover:text-accent dark:hover:text-accent hover:border-accent dark:hover:border-accent transition-colors"
+              >
+                Read Case Study →
+              </Link>
             </div>
           </motion.div>
 
