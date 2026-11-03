@@ -1,9 +1,17 @@
 import Image from "next/image";
 import BoardSwitch from "../components/BoardSwitch";
+import { workMetadata } from "../lib/seo";
 import type { CSSProperties } from "react";
 import BackButton from "../components/BackButton";
 import RevealInit from "../components/RevealInit";
 import YouTubeEmbed from "../components/YouTubeEmbed";
+
+// 検索向け: title「作品名 | 梅澤 陸 (Riku Umezawa)」、description は Overview の最初の 1 文、canonical / og / twitter
+export const metadata = workMetadata({
+  name: "TrailDrop",
+  description: "TrailDropは、目的地へ向かう旅行者のルートと通過時間から、その途中で受け取れる地域の商品を見つけ、予約・受取までをつなげるサービスです。",
+  path: "/traildrop",
+});
 
 export default function TraildropDetail() {
   return (

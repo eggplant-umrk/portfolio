@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Chakra_Petch, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "./lib/seo";
 import LazyProbe from "./components/LazyProbe"; // 測定プローブ型カーソル（マウスのある端末で、手が空いてから読み込む）
 
 // 見出し・名前（使っているのは 700 のみ）
@@ -36,13 +37,14 @@ const zenKakuGothicNew = localFont({
 
 export const metadata: Metadata = {
   // og:image / twitter:image（app/opengraph-image.tsx ほか）の URL をこのオリジンで解決する
-  metadataBase: new URL("https://eggplant-portfolio-rho.vercel.app"),
-  title: "Riku Umezawa | Portfolio",
-  description: "rikuのポートフォリオサイトです。パソコン推奨です",
+  metadataBase: new URL(SITE_URL),
+  // 既定の title / description（トップと同じ。各ページは app/lib/seo.ts の pageMetadata / workMetadata で上書き）
+  title: SITE_NAME,
+  description: SITE_DESCRIPTION,
   openGraph: {
     type: "website",
     locale: "ja_JP",
-    siteName: "Riku Umezawa | Portfolio",
+    siteName: SITE_NAME,
   },
   twitter: {
     card: "summary_large_image",

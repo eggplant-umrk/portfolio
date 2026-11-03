@@ -1,5 +1,6 @@
 import Image from "next/image";
 import BoardSwitch from "../components/BoardSwitch";
+import { workMetadata } from "../lib/seo";
 import type { CSSProperties } from "react";
 import BackButton from "../components/BackButton";
 import RevealInit from "../components/RevealInit";
@@ -36,6 +37,13 @@ const techStack = [
   "GitHub Actions",
   "Remotion",
 ];
+
+// 検索向け: title「作品名 | 梅澤 陸 (Riku Umezawa)」、description は Overview の最初の 1 文、canonical / og / twitter
+export const metadata = workMetadata({
+  name: "KOKUDO",
+  description: "実際に走った距離を全国の国道の区間に換算し、国道を一本ずつ走破していくランニング・ウォーキング記録アプリです。",
+  path: "/kokudo",
+});
 
 export default function KokudoDetail() {
   return (

@@ -6,6 +6,31 @@ import Opening from "./components/Opening"; // 初回訪問のオープニング
 import NewsList from "./components/NewsList"; // News の「もっと見る」
 import PageEffects from "./components/PageEffects"; // 表示域の監視・パララックス・画面外の停止
 import LazyLayerPanel from "./components/LazyLayerPanel"; // レイヤー表示の切り替え（マウスのある端末で、あとから読み込む）
+import { pageMetadata, SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "./lib/seo";
+
+// 検索向け: title / description / canonical / og / twitter（値は app/lib/seo.ts）
+export const metadata = pageMetadata({ title: SITE_NAME, description: SITE_DESCRIPTION, path: "/" });
+
+// 構造化データ（JSON-LD）: 人物とサイト。sameAs は X と、サイト内の GitHub リンクと同じ URL
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      name: "梅澤 陸",
+      alternateName: "Riku Umezawa",
+      url: SITE_URL,
+      jobTitle: "Front-End Developer",
+      affiliation: { "@type": "CollegeOrUniversity", name: "愛知工業大学" },
+      sameAs: ["https://x.com/rikuumezawa", "https://github.com/eggplant-umrk"],
+    },
+    {
+      "@type": "WebSite",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+  ],
+};
 
 // このページは Server Component。動く部分（メニュー・News の件数・オープニング・演出の監視）だけを
 // 小さな Client Component に分け、本文と装飾はサーバーで HTML にする
@@ -501,6 +526,8 @@ const newsData = [
 export default function Home() {
   return (
     <div className="pcb-board flex flex-col items-center w-full overflow-hidden relative text-silk">
+      {/* 構造化データ（実行されないスクリプト。CSP の script-src には影響しない） */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <PageEffects />
       {/* ＝＝＝ Edge.Cuts: 基板の外形線（ページの外周から 12px 内側） ＝＝＝ */}
       <span className="board-edge layer-edge" aria-hidden="true" />
@@ -559,6 +586,10 @@ export default function Home() {
               <span className="block">Riku</span>
               <span className="block">Umezawa</span>
             </h1>
+            {/* 日本語の名前（検索向け。名前と同じタイミングで現れる） */}
+            <p className="hero-in font-sans text-[16px] tracking-[0.1em] text-silk-label mt-3" style={{ "--d": "0.3s" } as CSSProperties}>
+              梅澤 陸
+            </p>
 
             <div className="hero-in mt-6" style={{ "--d": "0.5s" } as CSSProperties}>
               <h2 className="font-mono text-[16px] tracking-[0.2em] uppercase text-copper-light">
