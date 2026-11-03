@@ -45,17 +45,44 @@ const FLASH_IN = 150;
 const FLASH_HOLD = 350;
 const FLASH_OUT = 200;
 
-// <html data-board> と theme-color を切り替え、選択を保存して、ページ内の BoardSwitch すべてに知らせる
-function applyBoard(board: Board) {
+// <html data-board> と theme-color を切り替え、ページ内の BoardSwitch すべてに知らせる。
+// save が true のとき（本人がボタンを押したとき）だけ localStorage に保存する
+function applyBoard(board: Board, save = true) {
   document.documentElement.dataset.board = board;
   const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
   if (meta) meta.content = BOARDS.find((b) => b.id === board)?.themeColor ?? "#F2F1EA";
-  try {
-    localStorage.setItem(STORAGE_KEY, board);
-  } catch {
-    // localStorage が使えない環境では保存しない（表示の切り替えだけ行う）
+  if (save) {
+    try {
+      localStorage.setItem(STORAGE_KEY, board);
+    } catch {
+      // localStorage が使えない環境では保存しない（表示の切り替えだけ行う）
+    }
   }
   window.dispatchEvent(new Event(EVENT));
+}
+
+// 保存値があるか（読めないときは「ない」扱い）
+function hasSavedBoard() {
+  try {
+    const b = localStorage.getItem(STORAGE_KEY);
+    return b === "white" || b === "green" || b === "blue";
+  } catch {
+    return false;
+  }
+}
+
+// OS のダークモード設定の変化に追従する（保存値がない人だけ。dark → green、light → white）。
+// 覆い・トランジション・読み上げなしで即座に切り替え、保存もしない。ボタンを押して保存された後は追従しない。
+// 戻り値は後始末の関数
+export function followSystemBoard() {
+  if (!window.matchMedia) return () => {};
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  const onChange = (e: MediaQueryListEvent) => {
+    if (hasSavedBoard()) return;
+    applyBoard(e.matches ? "green" : "white", false);
+  };
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
 }
 
 // 読み上げ専用の領域（画面には出さない）に「緑の基板に切り替えました」と入れる
