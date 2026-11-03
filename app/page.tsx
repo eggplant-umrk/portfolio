@@ -3,52 +3,7 @@
 import { useState, useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
-// ＝＝＝ 自然で滑らかなクロスフェードアニメーションのトグルボタン（CSS transition） ＝＝＝
-const ThemeToggle = () => {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    if (document.documentElement.classList.contains("dark")) {
-      setIsDark(true);
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle("dark");
-  };
-
-  return (
-    <button
-      onClick={toggleTheme}
-      className="fixed bottom-8 right-8 z-50 flex items-center justify-center w-12 h-12 rounded-full bg-white/90 dark:bg-board/90 md:backdrop-blur-md md:bg-white/60 md:dark:bg-board/60 border border-gray-200/50 shadow-sm dark:border-copper/40 text-[#1A1A1A] dark:text-silk transition-[scale,color,background-color,border-color] duration-200 hover:scale-105 active:scale-95 overflow-hidden"
-      aria-label="Toggle Dark Mode"
-    >
-      <div
-        className={`relative flex items-center justify-center w-full h-full transition-[rotate] duration-500 ease-in-out ${isDark ? "rotate-180" : "rotate-0"}`}
-      >
-        <div
-          className={`absolute transition-[opacity,scale,rotate] duration-300 ${isDark ? "opacity-0 scale-50 -rotate-90" : "opacity-100 scale-100 rotate-0"}`}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="4" />
-            <path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" />
-            <path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" />
-          </svg>
-        </div>
-
-        <div
-          className={`absolute transition-[opacity,scale,rotate] duration-300 ${isDark ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-50 rotate-90"}`}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-          </svg>
-        </div>
-      </div>
-    </button>
-  );
-};
+import BoardSwitch from "./components/BoardSwitch";
 
 // ＝＝＝ 固定ナビゲーションヘッダー ＝＝＝
 const navLinks = [
@@ -63,19 +18,20 @@ const Header = ({ delayBase }: { delayBase: number }) => {
 
   return (
     <header
-      className="header-in fixed top-0 left-0 w-full z-40 px-6 md:px-12 lg:px-24 py-5 flex items-center justify-between md:backdrop-blur-md bg-white/90 dark:bg-board/90 md:bg-white/60 md:dark:bg-board/70 border-b border-gray-100 dark:border-line transition-colors duration-500"
+      className="header-in fixed top-0 left-0 w-full z-40 h-[var(--header-h)] px-6 md:px-12 lg:px-24 flex items-center justify-between md:backdrop-blur-md bg-board/90 md:bg-board/70 border-b border-line"
       style={{ "--d": `${delayBase}s` } as CSSProperties}
     >
       {/* ロゴ風「RU」（銅色の枠）+ リビジョン表記 */}
       <a href="#" className="flex items-center gap-3 whitespace-nowrap group" aria-label="RIKU UMEZAWA">
-        <span className="flex items-center justify-center w-9 h-9 rounded-[4px] border-2 border-copper font-display font-bold text-sm tracking-tight text-[#1A1A1A] dark:text-copper-light group-hover:text-accent dark:group-hover:text-[#FFD08F] transition-colors">
+        <span className="flex items-center justify-center w-9 h-9 rounded-[4px] border-2 border-copper font-display font-bold text-sm tracking-tight text-copper-light group-hover:text-copper-hover transition-colors">
           RU
         </span>
         <span className="font-mono text-[12px] tracking-[0.12em] text-silk-label">REV 2026.11</span>
       </a>
 
-      {/* デスクトップ用ナビ（md以上のみ表示） */}
-      <nav className="hidden md:flex items-center gap-6 lg:gap-10">
+      {/* デスクトップ用ナビ + 基板の色切り替え（lg 以上のみ表示。768〜1023px ではヘッダーに入りきらないためメニュー側） */}
+      <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+      <nav className="flex items-center gap-6 xl:gap-10">
         {navLinks.map((link) => (
           <a
             key={link.href}
@@ -83,17 +39,19 @@ const Header = ({ delayBase }: { delayBase: number }) => {
             className="group font-mono text-[13px] tracking-[0.12em] flex items-center gap-2 transition-colors"
           >
             <span className="text-silk-label">{link.part}</span>
-            <span className="text-gray-700 dark:text-[#C9D2C6] group-hover:text-accent dark:group-hover:text-[#FFD08F] transition-colors">{link.label}</span>
+            <span className="text-nav group-hover:text-copper-hover transition-colors">{link.label}</span>
           </a>
         ))}
       </nav>
+      <BoardSwitch />
+      </div>
 
-      {/* ハンバーガーボタン（md未満のみ表示） */}
+      {/* ハンバーガーボタン（lg未満のみ表示） */}
       <button
         onClick={() => setIsMenuOpen((prev) => !prev)}
         aria-label={isMenuOpen ? "メニューを閉じる" : "メニューを開く"}
         aria-expanded={isMenuOpen}
-        className="md:hidden relative z-50 flex flex-col justify-center items-center gap-[5px] w-8 h-8 shrink-0 text-[#1A1A1A] dark:text-white"
+        className="lg:hidden relative z-50 flex flex-col justify-center items-center gap-[5px] w-8 h-8 shrink-0 text-silk"
       >
         <span
           className={`block w-6 h-[2px] bg-current transition-[translate,rotate] duration-300 ease-in-out ${isMenuOpen ? "translate-y-[6px] rotate-45" : ""}`}
@@ -106,13 +64,15 @@ const Header = ({ delayBase }: { delayBase: number }) => {
         />
       </button>
 
-      {/* モバイル用フルスクリーンメニュー（常時マウントし、opacity / visibility で開閉） */}
-      <nav
+      {/* モバイル用フルスクリーンメニュー（常時マウントし、opacity / visibility で開閉）。
+          基板の色切り替えは <nav> の外、同じ固定レイヤーの中に置く */}
+      <div
         aria-hidden={!isMenuOpen}
-        className={`md:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-8 bg-white dark:bg-board transition-[opacity,visibility] duration-300 ease-in-out ${
+        className={`lg:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-8 bg-board transition-[opacity,visibility] duration-300 ease-in-out ${
           isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
       >
+        <nav className="flex flex-col items-center gap-8">
         {navLinks.map((link, i) => (
           <a
             key={link.href}
@@ -125,48 +85,39 @@ const Header = ({ delayBase }: { delayBase: number }) => {
             style={{ transitionDelay: isMenuOpen ? `${0.1 + i * 0.06}s` : "0s" }}
           >
             <span className="text-base text-silk-label">{link.part}</span>
-            <span className="text-[#1A1A1A] dark:text-[#C9D2C6] group-hover:text-accent dark:group-hover:text-[#FFD08F] transition-colors">{link.label}</span>
+            <span className="text-nav group-hover:text-copper-hover transition-colors">{link.label}</span>
           </a>
         ))}
-      </nav>
+        </nav>
+        <BoardSwitch variant="menu" />
+      </div>
     </header>
   );
 };
 
-// ＝＝＝ フィルムグレイン（画面全体の極薄ノイズ質感） ＝＝＝
-const Grain = () => (
-  <div
-    className="fixed inset-0 z-[90] pointer-events-none opacity-[0.05] dark:opacity-[0.08]"
-    style={{
-      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
-    }}
-  />
-);
-
-// ＝＝＝ 無限マーキー（塗り文字と縁取り文字が交互に流れる帯。CSS keyframes、画面外では停止） ＝＝＝
-const marqueeItems = ["FRONT-END DEVELOPER", "UI / UX DESIGN", "REACT NATIVE", "FIGMA", "RAMEN"];
+// ＝＝＝ 無限マーキー（基板風の表記。CSS keyframes、画面外では停止） ＝＝＝
+const marqueeItems = ["UMZW-29", "REV 2026.11", "FRONT-END", "UI/UX", "REACT NATIVE", "FIGMA", "AIT EEE", "NAGOYA"];
 
 const Marquee = () => (
-  <div data-pause-offscreen className="w-full overflow-hidden border-y border-gray-200 dark:border-line py-5 md:py-7 bg-white dark:bg-transparent transition-colors duration-500">
-    <div className="marquee-track flex whitespace-nowrap w-max">
-      {[0, 1].map((half) => (
-        <div key={half} className="flex items-center shrink-0">
-          {marqueeItems.map((item, i) => (
-            <span key={i} className="flex items-center">
-              <span
-                className={`text-3xl md:text-5xl font-black tracking-tighter px-6 ${
-                  i % 2 === 0
-                    ? "text-[#1A1A1A] dark:text-silk"
-                    : "text-transparent [-webkit-text-stroke:1.5px_#1A1A1A] dark:[-webkit-text-stroke:1.5px_#ECEEE4]"
-                } transition-colors duration-500`}
-              >
-                {item}
+  <div data-pause-offscreen className="marquee relative w-full">
+    {/* 上下の銅線の両端に置くパッド（overflow の外に出すため、帯の外側に置く） */}
+    <span className="marquee-pad -top-[3px] left-3 md:left-6" aria-hidden="true" />
+    <span className="marquee-pad -top-[3px] right-3 md:right-6" aria-hidden="true" />
+    <span className="marquee-pad -bottom-[3px] left-3 md:left-6" aria-hidden="true" />
+    <span className="marquee-pad -bottom-[3px] right-3 md:right-6" aria-hidden="true" />
+    <div className="marquee-lines w-full overflow-hidden py-5 md:py-7">
+      <div className="marquee-track flex whitespace-nowrap w-max">
+        {/* 2周目は見た目の継ぎ目用なので読み上げ対象から外す */}
+        {[0, 1].map((half) => (
+          <div key={half} className="flex items-center shrink-0" aria-hidden={half === 1 ? true : undefined}>
+            {marqueeItems.map((item, i) => (
+              <span key={i} className="font-mono text-[13px] md:text-[14px] tracking-[0.14em] text-silk-label px-4 md:px-6">
+                {item} ·
               </span>
-              <span className="text-accent text-xl md:text-2xl">✦</span>
-            </span>
-          ))}
-        </div>
-      ))}
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   </div>
 );
@@ -240,7 +191,7 @@ const SectionTitle = ({
     <div className="relative flex items-end justify-between gap-4">
       <span className="pcb-pad" aria-hidden="true" />
       <Reveal variant="mask">
-        <h3 className="font-display font-bold text-4xl md:text-[56px] leading-none tracking-tight text-[#1A1A1A] dark:text-silk">
+        <h3 className="font-display font-bold text-4xl md:text-[56px] leading-none tracking-tight text-silk">
           {title}
         </h3>
       </Reveal>
@@ -264,8 +215,8 @@ const HeroCircuit = () => (
   <svg viewBox="620 40 600 520" style={{ display: "block", width: "100%", height: "auto", overflow: "visible" }} aria-hidden="true">
     <defs>
       <radialGradient id="led-glow-grad">
-        <stop offset="0" stopColor="#FF6A3D" stopOpacity="0.55" />
-        <stop offset="1" stopColor="#FF6A3D" stopOpacity="0" />
+        <stop offset="0" stopColor="var(--led-glow)" stopOpacity="0.55" />
+        <stop offset="1" stopColor="var(--led-glow)" stopOpacity="0" />
       </radialGradient>
     </defs>
     <path className="trace" d="M740 392 H700 L660 432 V560" />
@@ -285,8 +236,8 @@ const HeroCircuit = () => (
     <circle className="via" cx="660" cy="170" r="8" />
     <circle className="via" cx="700" cy="336" r="7" />
     <g className="chip">
-      <rect x="760" y="250" width="240" height="200" rx="6" fill="#151816" />
-      <g fill="#9A9C9A">
+      <rect x="760" y="250" width="240" height="200" rx="6" fill="var(--chip)" />
+      <g fill="var(--chip-pin)">
         {chipPinYs.map((y) => (
           <rect key={`l${y}`} x="740" y={y} width="20" height="16" />
         ))}
@@ -294,18 +245,18 @@ const HeroCircuit = () => (
           <rect key={`r${y}`} x="1000" y={y} width="20" height="16" />
         ))}
       </g>
-      <circle cx="782" cy="272" r="6" fill="#2C302D" />
-      <text x="880" y="340" textAnchor="middle" fill="#ECEEE4" fontFamily="var(--font-chakra), 'Chakra Petch', sans-serif" fontWeight="700" fontSize="30">
+      <circle cx="782" cy="272" r="6" fill="var(--chip-pin1)" />
+      <text x="880" y="340" textAnchor="middle" fill="var(--chip-text)" fontFamily="var(--font-chakra), 'Chakra Petch', sans-serif" fontWeight="700" fontSize="30">
         UMZW-29
       </text>
-      <text x="880" y="372" textAnchor="middle" fill="#9FB3A7" fontFamily="var(--font-jetbrains), 'JetBrains Mono', monospace" fontSize="13">
+      <text x="880" y="372" textAnchor="middle" fill="var(--chip-muted)" fontFamily="var(--font-jetbrains), 'JetBrains Mono', monospace" fontSize="13">
         FRONT-END · UI/UX
       </text>
-      <text x="880" y="396" textAnchor="middle" fill="#6E8C7E" fontFamily="var(--font-jetbrains), 'JetBrains Mono', monospace" fontSize="11">
+      <text x="880" y="396" textAnchor="middle" fill="var(--chip-dim)" fontFamily="var(--font-jetbrains), 'JetBrains Mono', monospace" fontSize="11">
         AIT EEE · NAGOYA
       </text>
     </g>
-    <g fontFamily="var(--font-jetbrains), 'JetBrains Mono', monospace" fontSize="12" fill="#A9B5A8">
+    <g fontFamily="var(--font-jetbrains), 'JetBrains Mono', monospace" fontSize="12" fill="var(--silk-muted)">
       <circle className="led-glow l1" cx="1120" cy="88" r="45" fill="url(#led-glow-grad)" />
       <circle className="led l1" cx="1120" cy="88" r="14" />
       <text x="1142" y="92">D1</text>
@@ -376,7 +327,7 @@ const WorkCard = ({ work, featured = false }: { work: (typeof worksData)[number]
   const inner = (
     <>
       {/* 上: 画像枠 */}
-      <div className="relative aspect-video bg-[#071A13] border-[1.5px] border-b-0 border-line-dashed rounded-t-[6px] overflow-hidden">
+      <div className="relative aspect-video bg-frame border-[1.5px] border-b-0 border-line-dashed rounded-t-[6px] overflow-hidden">
         <Image
           src={work.image.src}
           alt={work.image.alt}
@@ -386,21 +337,21 @@ const WorkCard = ({ work, featured = false }: { work: (typeof worksData)[number]
         />
       </div>
       {/* 下: チップ本体（左右の端子は ::before / ::after） */}
-      <div className="chip-body relative bg-[#151816] rounded-b-[6px] px-8 pt-7 pb-8">
+      <div className="chip-body relative bg-chip rounded-b-[6px] px-8 pt-7 pb-8">
         <span className="chip-notch" aria-hidden="true" />
         <span className="chip-pin1" aria-hidden="true" />
-        <p className="font-mono text-[12px] tracking-[0.12em] text-silk-label">{work.ref}</p>
-        <p className="text-[13px] font-bold text-led-glow mt-3">{work.award}</p>
-        <h4 className="font-display font-bold text-[34px] leading-tight text-silk mt-2">{work.title}</h4>
-        <p className="text-[14px] leading-[1.8] text-[#B8C2B5] mt-4">{work.description}</p>
+        <p className="font-mono text-[12px] tracking-[0.12em] text-chip-label">{work.ref}</p>
+        <p className="text-[13px] font-bold text-chip-led mt-3">{work.award}</p>
+        <h4 className="font-display font-bold text-[34px] leading-tight text-chip-text mt-2">{work.title}</h4>
+        <p className="text-[14px] leading-[1.8] text-chip-soft mt-4">{work.description}</p>
         <div className="flex flex-wrap gap-2 mt-5">
           {work.tech.map((tech) => (
-            <span key={tech} className="font-mono text-[12px] text-silk-muted border border-[#3B403C] rounded-[3px] px-2 py-1">
+            <span key={tech} className="font-mono text-[12px] text-chip-muted border border-chip-line rounded-[3px] px-2 py-1">
               {tech}
             </span>
           ))}
         </div>
-        <p className="chip-link font-mono text-[13px] text-silk-muted mt-6 transition-colors duration-[350ms]">
+        <p className="chip-link font-mono text-[13px] text-chip-muted mt-6 transition-colors duration-[350ms]">
           {work.href ? "Read Case Study →" : "Preparation..."}
         </p>
       </div>
@@ -530,13 +481,7 @@ export default function Home() {
   const displayNews = showAllNews ? newsData : newsData.slice(0, 5);
 
   return (
-    <div className="pcb-board flex flex-col items-center w-full overflow-hidden relative transition-colors duration-500 bg-white text-[#1A1A1A] dark:text-silk">
-
-      {/* ＝＝＝ フィルムグレイン ＝＝＝ */}
-      <Grain />
-
-      {/* ＝＝＝ ダークモードトグルボタン ＝＝＝ */}
-      <ThemeToggle />
+    <div className="pcb-board flex flex-col items-center w-full overflow-hidden relative text-silk">
 
       {/* ＝＝＝ ナビゲーションヘッダー ＝＝＝ */}
       <Header delayBase={0.2} />
@@ -562,7 +507,7 @@ export default function Home() {
           起動演出は globals.css の .hero-in / .hero-circuit（CSS アニメーション）で、ページ表示と同時に始まる */}
       <main
         data-pause-offscreen
-        className="relative min-h-screen flex flex-col w-full overflow-hidden pt-24 md:pt-20 pb-8"
+        className="relative min-h-screen flex flex-col w-full overflow-hidden pt-[calc(var(--header-h)+48px)] pb-8"
       >
 
         {/* 演出1：背景の光（filter: blur をやめ、静的な radial-gradient で同じ見た目に） */}
@@ -574,7 +519,7 @@ export default function Home() {
           ref={watermarkRef}
           className="watermark-in absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center pointer-events-none z-0"
         >
-          <p className="font-display text-[15vw] md:text-[12vw] font-bold text-gray-100/55 dark:text-silk/5 select-none tracking-tighter">
+          <p className="font-display text-[15vw] md:text-[12vw] font-bold text-silk/5 select-none tracking-tighter">
             PORTFOLIO
           </p>
         </div>
@@ -692,7 +637,7 @@ export default function Home() {
         </div>
 
       {/* ＝＝＝ About（自己紹介）セクション ＝＝＝ */}
-      <section id="about" className="w-full px-8 md:px-24 py-32 bg-[#FAFAFA] dark:bg-transparent scroll-mt-16 transition-colors duration-500">
+      <section id="about" className="w-full px-8 md:px-24 py-32 scroll-mt-[var(--header-h)]">
         <div className="max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
           <SectionTitle part="U1" index="01" title="About Me" />
           <div className="flex flex-col lg:flex-row gap-16">
@@ -738,12 +683,12 @@ export default function Home() {
       </section>
 
       {/* ＝＝＝ ニュース＆アクティビティ セクション ＝＝＝ */}
-      <section id="news" className="w-full px-8 md:px-24 py-24 bg-white dark:bg-transparent scroll-mt-16 transition-colors duration-500">
+      <section id="news" className="w-full px-8 md:px-24 py-24 scroll-mt-[var(--header-h)]">
         <div className="max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
           <SectionTitle part="U2" index="02" title="Activity & News" tag="TEST LOG" />
 
           {/* 「日付 | 本文」の2列グリッド（スマホは縦積み） */}
-          <div className="max-w-3xl flex flex-col border-t-[1.5px] border-[#3E6B57]">
+          <div className="max-w-3xl flex flex-col border-t-[1.5px] border-line-strong">
             {displayNews.map((item, index) => (
               <Reveal
                 key={index}
@@ -751,7 +696,7 @@ export default function Home() {
                 delay={index * 0.05}
                 className="group grid grid-cols-1 sm:grid-cols-[150px_1fr] gap-1 sm:gap-4 items-baseline py-5 border-b border-dotted border-line-dashed cursor-default"
               >
-                <span className="font-mono text-[14px] text-silk-muted group-hover:text-[#FF8A50] transition-colors duration-[250ms]">
+                <span className="font-mono text-[14px] text-silk-muted group-hover:text-led-text transition-colors duration-[250ms]">
                   {item.date}
                 </span>
                 <span className="text-[17px] font-medium text-silk group-hover:translate-x-[6px] transition-transform duration-[250ms]">
@@ -775,7 +720,7 @@ export default function Home() {
       </section>
 
       {/* ＝＝＝ プロジェクトセクション ＝＝＝ */}
-      <section id="projects" className="w-full px-8 md:px-24 py-32 bg-[#FAFAFA] dark:bg-transparent scroll-mt-16 transition-colors duration-500">
+      <section id="projects" className="w-full px-8 md:px-24 py-32 scroll-mt-[var(--header-h)]">
         <div className="max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
           <SectionTitle part="U3" index="03" title="Selected Works" />
 
@@ -791,7 +736,7 @@ export default function Home() {
       </section>
 
       {/* ＝＝＝ フッター（コンタクトセクション） ＝＝＝ */}
-      <footer id="contact" className="w-full px-8 md:px-24 pt-32 pb-12 bg-white dark:bg-transparent border-t border-gray-100 dark:border-line scroll-mt-16 transition-colors duration-500">
+      <footer id="contact" className="w-full px-8 md:px-24 pt-32 pb-12 border-t border-line scroll-mt-[var(--header-h)]">
         <div className="max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
           <SectionTitle part="J1" index="04" title="Get in Touch" />
 
@@ -802,7 +747,7 @@ export default function Home() {
           </Reveal>
 
           {/* コネクタ: 点線枠の中に各連絡先を「ピン」として並べる */}
-          <Reveal margin="0px" delay={0.2} className="max-w-3xl border-[1.5px] border-dashed border-[#3E6B57] rounded-[6px] px-8 py-7 mb-24">
+          <Reveal margin="0px" delay={0.2} className="max-w-3xl border-[1.5px] border-dashed border-line-strong rounded-[6px] px-8 py-7 mb-24">
             <p className="font-mono text-[12px] tracking-[0.12em] text-silk-label mb-6">J1 — CONNECTOR</p>
             <div className="flex flex-wrap gap-7">
               {contactLinks.map((link) => (
@@ -827,7 +772,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-8 border-t border-line font-mono text-[12px] tracking-[0.12em] text-silk-label">
             <p>© RIKU UMEZAWA</p>
             <p>BOARD: PORTFOLIO · REV 2026.11 · MADE IN NAGOYA</p>
-            <a href="#" className="hover:text-[#FFD08F] transition-colors">
+            <a href="#" className="hover:text-copper-hover transition-colors">
               BACK TO TOP ↑
             </a>
           </div>
