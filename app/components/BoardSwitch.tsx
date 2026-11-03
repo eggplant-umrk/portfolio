@@ -34,15 +34,20 @@ function subscribe(callback: () => void) {
   return () => window.removeEventListener(EVENT, callback);
 }
 
-export function setBoard(board: Board) {
-  const root = document.documentElement;
-  // 背景色・文字色を 0.3 秒でなめらかに切り替える。prefers-reduced-motion のときは付けない（即時）
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!reduceMotion) {
-    root.classList.add("theme-switching");
-    window.setTimeout(() => root.classList.remove("theme-switching"), 350);
-  }
-  root.dataset.board = board;
+// 覆いに使う切り替え先の色（globals.css の各テーマの --board / --grid-dot / --silk-label / --silk / --copper と同じ値）
+const FLASH_COLORS: Record<Board, { board: string; dot: string; label: string; text: string; copper: string }> = {
+  white: { board: "#F2F1EA", dot: "rgba(20, 30, 25, 0.09)", label: "#5B675F", text: "#141613", copper: "#B07A3E" },
+  green: { board: "#0D2E22", dot: "rgba(236, 238, 228, 0.15)", label: "#7FA08F", text: "#ECEEE4", copper: "#D19A5B" },
+  blue: { board: "#10325A", dot: "rgba(236, 240, 246, 0.15)", label: "#8FA6C1", text: "#ECEEE4", copper: "#D19A5B" },
+};
+// 覆いの時間（ms）: フェードイン → 一気に切り替え → 見せる → フェードアウト（合計 0.7s）
+const FLASH_IN = 150;
+const FLASH_HOLD = 350;
+const FLASH_OUT = 200;
+
+// <html data-board> と theme-color を切り替え、選択を保存して、ページ内の BoardSwitch すべてに知らせる
+function applyBoard(board: Board) {
+  document.documentElement.dataset.board = board;
   const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
   if (meta) meta.content = BOARDS.find((b) => b.id === board)?.themeColor ?? "#F2F1EA";
   try {
@@ -50,8 +55,100 @@ export function setBoard(board: Board) {
   } catch {
     // localStorage が使えない環境では保存しない（表示の切り替えだけ行う）
   }
-  // 同じページ内の BoardSwitch（ヘッダー / メニュー）すべてに知らせる
   window.dispatchEvent(new Event(EVENT));
+}
+
+// 読み上げ専用の領域（画面には出さない）に「緑の基板に切り替えました」と入れる
+let liveEl: HTMLDivElement | null = null;
+function announce(board: Board) {
+  if (!liveEl) {
+    liveEl = document.createElement("div");
+    liveEl.className = "sr-only-live";
+    liveEl.setAttribute("aria-live", "polite");
+    liveEl.setAttribute("aria-atomic", "true");
+    document.body.appendChild(liveEl);
+  }
+  const label = BOARDS.find((b) => b.id === board)?.label ?? "基板";
+  liveEl.textContent = `${label}に切り替えました`;
+}
+
+// 画面全体を覆う表示（body に 1 つだけ作って使い回す）。装飾なので aria-hidden
+let flashEl: HTMLDivElement | null = null;
+let flashName: HTMLElement | null = null;
+function ensureFlash() {
+  if (!flashEl) {
+    flashEl = document.createElement("div");
+    flashEl.className = "board-flash";
+    flashEl.setAttribute("aria-hidden", "true");
+    const label = document.createElement("p");
+    label.className = "board-flash-label";
+    label.textContent = "FLASHING BOARD…";
+    flashName = document.createElement("p");
+    flashName.className = "board-flash-name";
+    const bar = document.createElement("div");
+    bar.className = "board-flash-bar";
+    bar.appendChild(document.createElement("span"));
+    flashEl.append(label, flashName, bar);
+    document.body.appendChild(flashEl);
+  }
+  return flashEl;
+}
+// 覆いの色と名前を切り替え先に合わせる（連打で切り替え先が変わったときにも呼ぶ）
+function paintFlash(board: Board) {
+  const el = ensureFlash();
+  const c = FLASH_COLORS[board];
+  el.style.setProperty("--flash-board", c.board);
+  el.style.setProperty("--flash-dot", c.dot);
+  el.style.setProperty("--flash-label", c.label);
+  el.style.setProperty("--flash-text", c.text);
+  el.style.setProperty("--flash-copper", c.copper);
+  if (flashName) flashName.textContent = BOARDS.find((b) => b.id === board)?.short ?? "";
+}
+
+// 連打の扱い: 覆いが出ている間に押されたら切り替え先だけ差し替え、切り替えは 1 回にする。
+// 切り替え後（見せている間・フェードアウト中）に押されたら、終わってから最後の色でもう 1 回だけ行う
+let pending: Board | null = null;
+let running = false;
+function runFlash() {
+  const el = ensureFlash();
+  paintFlash(pending as Board);
+  el.classList.remove("is-out");
+  void el.offsetWidth; // 一度レイアウトを確定させてから is-on を付け、opacity のトランジションを始める
+  el.classList.add("is-on");
+  window.setTimeout(() => {
+    // 覆いが出きったら、最後に押された色へ一気に切り替える（トランジションなし）
+    const target = pending as Board;
+    applyBoard(target);
+    announce(target);
+    window.setTimeout(() => {
+      el.classList.add("is-out");
+      el.classList.remove("is-on");
+      window.setTimeout(() => {
+        if (pending !== target) {
+          runFlash();
+        } else {
+          running = false;
+          pending = null;
+        }
+      }, FLASH_OUT);
+    }, FLASH_HOLD);
+  }, FLASH_IN);
+}
+
+export function setBoard(board: Board) {
+  // 動きを減らす設定のときは覆いを出さず、即座に切り替える
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    applyBoard(board);
+    announce(board);
+    return;
+  }
+  pending = board;
+  if (running) {
+    paintFlash(board);
+    return;
+  }
+  running = true;
+  runFlash();
 }
 
 // variant: "inline" = ヘッダー内（lg 以上で表示） / "menu" = スマホメニュー内 / "floating" = 詳細ページの右下

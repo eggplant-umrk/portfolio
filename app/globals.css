@@ -152,12 +152,65 @@ body {
   color: var(--silk);
 }
 
-/* テーマ切り替え中だけ、色の変化を 0.3 秒でなめらかに（prefers-reduced-motion のときは付けない） */
-.theme-switching,
-.theme-switching *,
-.theme-switching *::before,
-.theme-switching *::after {
-  transition: background-color .3s ease, color .3s ease, border-color .3s ease, fill .3s ease, stroke .3s ease !important;
+/* ＝＝＝ 基板の色の切り替え中の覆い（BoardSwitch.tsx が body に 1 つ作る） ＝＝＝
+   色は切り替え先の基板のもの（--flash-* をインラインで指定）。0.15s でフェードイン → 一気に切り替え → 0.35s 見せて 0.2s でフェードアウト。
+   覆いはクリックを通す（連打できるように）。プローブ（z 9999）だけが上に出る */
+.board-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  opacity: 0;
+  pointer-events: none;
+  background-color: var(--flash-board);
+  background-image: radial-gradient(var(--flash-dot) 1.2px, transparent 1.6px);
+  background-size: 24px 24px;
+  transition: opacity .15s ease;
+}
+.board-flash.is-on { opacity: 1; }
+.board-flash.is-out { transition-duration: .2s; }
+.board-flash-label {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  color: var(--flash-label);
+}
+.board-flash-name {
+  font-family: var(--font-chakra), var(--font-zen-kaku), sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1;
+  color: var(--flash-text);
+}
+.board-flash-bar {
+  width: 160px;
+  height: 4px;
+  border: 1px solid var(--flash-copper);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.board-flash-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--flash-copper);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.board-flash.is-on .board-flash-bar > span { animation: board-flash-bar .55s linear forwards; }
+@keyframes board-flash-bar { to { transform: scaleX(1); } }
+/* 読み上げ専用（画面には出さない） */
+.sr-only-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 /* ＝＝＝ 基板の地 + 点のグリッド（ページのルート要素に敷く） ＝＝＝ */
@@ -274,7 +327,7 @@ body {
   opacity: 0;
   transform: translateY(14px);
   animation: hero-in 0.6s ease-out forwards;
-  animation-delay: var(--d, 0s);
+  animation-delay: calc(var(--d, 0s) + var(--intro-offset)); /* 初回訪問はオープニングが消え始めるまで待つ */
 }
 @keyframes hero-in {
   to { opacity: 1; transform: translateY(0); }
@@ -316,12 +369,12 @@ body {
   stroke-dasharray: 1400;
   stroke-dashoffset: 1400;
   animation: draw 1.6s cubic-bezier(.6, .1, .3, 1) forwards;
-  animation-delay: .1s;
+  animation-delay: calc(.1s + var(--intro-offset));
 }
 .hero-circuit .pwr { stroke-width: 5; } /* 電源（+3V3・GND）は信号より太く */
-.hero-circuit .t2 { animation-delay: .3s; }
-.hero-circuit .t3 { animation-delay: .5s; }
-.hero-circuit .t4 { animation-delay: .7s; }
+.hero-circuit .t2 { animation-delay: calc(.3s + var(--intro-offset)); }
+.hero-circuit .t3 { animation-delay: calc(.5s + var(--intro-offset)); }
+.hero-circuit .t4 { animation-delay: calc(.7s + var(--intro-offset)); }
 @keyframes draw { to { stroke-dashoffset: 0; } }
 
 .hero-circuit .flow {
@@ -331,7 +384,8 @@ body {
   stroke-linecap: round;
   stroke-dasharray: 8 46;
   opacity: 0;
-  animation: fadein .4s 1.5s forwards, dash 1.6s 1.5s linear infinite;
+  animation: fadein .4s forwards, dash 1.6s linear infinite;
+  animation-delay: calc(1.5s + var(--intro-offset));
 }
 /* 電流の発光: 同じ経路に太め・低不透明度の線を重ねる */
 .hero-circuit .flow-glow {
@@ -346,17 +400,20 @@ body {
   stroke: var(--copper);
   stroke-width: 3;
   opacity: 0;
-  animation: fadein .3s .8s forwards;
+  animation: fadein .3s forwards;
+  animation-delay: calc(.8s + var(--intro-offset));
 }
 /* 銅のパッド（IC のピンの下・LED の端子）はビアと同時に、部品はその直後に現れる */
 .hero-circuit .pad {
   fill: var(--copper);
   opacity: 0;
-  animation: fadein .3s .8s forwards;
+  animation: fadein .3s forwards;
+  animation-delay: calc(.8s + var(--intro-offset));
 }
 .hero-circuit .part {
   opacity: 0;
-  animation: fadein .3s .9s forwards;
+  animation: fadein .3s forwards;
+  animation-delay: calc(.9s + var(--intro-offset));
 }
 /* LED の外形線（シルク）。平らな辺がカソード側 */
 .hero-circuit .silk {
@@ -368,7 +425,8 @@ body {
   opacity: 0;
   transform-box: fill-box;
   transform-origin: center;
-  animation: chipin .6s .6s cubic-bezier(.2, .9, .3, 1.2) forwards;
+  animation: chipin .6s cubic-bezier(.2, .9, .3, 1.2) forwards;
+  animation-delay: calc(.6s + var(--intro-offset));
 }
 @keyframes chipin {
   from { opacity: 0; transform: scale(.92); }
@@ -385,8 +443,8 @@ body {
   transform: scale(.6);
   animation: glowon .5s ease-out forwards;
 }
-.hero-circuit .l1 { animation-delay: 1.1s; }
-.hero-circuit .l2 { animation-delay: 1.3s; }
+.hero-circuit .l1 { animation-delay: calc(1.1s + var(--intro-offset)); }
+.hero-circuit .l2 { animation-delay: calc(1.3s + var(--intro-offset)); }
 @keyframes ledon { to { fill: var(--led); } }
 @keyframes glowon { to { opacity: 1; transform: scale(1); } }
 
@@ -638,7 +696,7 @@ html.is-hidden [data-pause-offscreen] .pcb-spine::after {
 .fade-in {
   opacity: 0;
   animation: fade-in 1s ease forwards;
-  animation-delay: var(--d, 0s);
+  animation-delay: calc(var(--d, 0s) + var(--intro-offset));
 }
 @keyframes fade-in { to { opacity: 1; } }
 
@@ -647,6 +705,7 @@ html.is-hidden [data-pause-offscreen] .pcb-spine::after {
   opacity: 0;
   scale: .95;
   animation: watermark-in 1.5s ease-out forwards;
+  animation-delay: var(--intro-offset);
 }
 @keyframes watermark-in { to { opacity: 1; scale: 1; } }
 
@@ -675,23 +734,31 @@ html.is-hidden [data-pause-offscreen] .pcb-spine::after {
 @keyframes marquee { to { transform: translateX(-50%); } }
 
 /* オープニング（初回訪問のみ）。常に DOM にあり、<html data-intro="play"> のときだけ表示する。
-   0.4s で消え始め 0.9s で完全に消える（終端で visibility: hidden にして操作も通さない）。
-   Hero の起動演出はこれを待たず、同時に進む */
+   タイムライン（秒数は変数で調整）: 0〜--intro-in 文字がフェードイン → --intro-hold そのまま表示 →
+   --intro-out でスライドして消える（終端で visibility: hidden にして操作も通さない）。
+   初回訪問では Hero の起動演出を --intro-offset（= 消え始めの時刻）だけ遅らせる。2 回目以降は 0 */
+:root {
+  --intro-in: .3s;
+  --intro-hold: .9s;
+  --intro-out: .6s;
+  --intro-offset: 0s;
+}
+html[data-intro="play"] { --intro-offset: calc(var(--intro-in) + var(--intro-hold)); }
 .opening { display: none; }
 html[data-intro="play"] .opening {
   display: flex;
-  animation: opening-slide .5s cubic-bezier(.76, 0, .24, 1) .4s forwards;
+  animation: opening-slide var(--intro-out) cubic-bezier(.76, 0, .24, 1) forwards;
+  animation-delay: calc(var(--intro-in) + var(--intro-hold));
 }
 @keyframes opening-slide { to { transform: translateY(-100vh); visibility: hidden; } }
 .opening-text {
   opacity: 0;
-  animation: opening-text-in .2s ease-out 0s forwards, opening-text-out .15s ease .3s forwards;
+  animation: opening-text-in var(--intro-in) ease-out 0s forwards;
 }
 @keyframes opening-text-in {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-@keyframes opening-text-out { to { opacity: 0; } }
 
 /* YouTube の軽量埋め込み: サムネイル + 再生ボタン（押すと iframe に切り替わる） */
 .yt-facade { display: block; background: #000; cursor: pointer; }
@@ -994,8 +1061,5 @@ html[data-intro="play"] .opening {
   .reveal,
   .reveal-mask > * { opacity: 1; transform: none; transition: none; }
   .opening { display: none !important; }
-  .theme-switching,
-  .theme-switching *,
-  .theme-switching *::before,
-  .theme-switching *::after { transition: none !important; }
+  .board-flash { display: none !important; }
 }
