@@ -35,6 +35,8 @@
   --line-strong: #B9BDB0;  /* 表の見出し線・コネクタ枠・表示枠 */
   --trace: #C9A27A;        /* スパイン（左を流れる配線） */
   --svg-trace: #B07A3E;    /* Hero 回路の配線 */
+  --bcu: #4D7FC4;          /* 裏の銅（B.Cu）の配線。KiCad の色 */
+  --edge: color-mix(in srgb, var(--silk-label) 55%, transparent); /* 基板の外形線（Edge.Cuts） */
   --frame: #E7E5DC;        /* 作品画像の枠の中 */
   --glow: rgba(176, 122, 62, 0.12); /* Hero 背景の光 */
   --probe-bg: rgba(242, 241, 234, 0.94); /* プローブの表示枠 */
@@ -85,6 +87,7 @@ html[data-board="blue"] {
   --line-strong: #3E6B57;
   --trace: #5E4428;
   --svg-trace: #B9824A;
+  --bcu: #6FA0E8;
   --frame: #071A13;
   --glow: rgba(209, 154, 91, 0.07);
   --probe-bg: rgba(7, 26, 19, 0.92);
@@ -538,8 +541,85 @@ body {
   background: var(--probe-bg);
   border: 1px solid var(--line-strong);
 }
+.probe-name { color: var(--silk); }
+/* I2C の波形: 2 周期（240px）を描いた線を 1 周期ぶん左へ流す */
+.probe-wave { display: block; width: 120px; height: 24px; margin: 3px 0 2px; overflow: hidden; }
+.probe-wave[hidden] { display: none; }
+.probe-wave path {
+  fill: none;
+  stroke: var(--led-glow);
+  stroke-width: 1.5;
+  animation: probe-wave 2.4s linear infinite;
+}
+@keyframes probe-wave { to { transform: translateX(-120px); } }
+@media (prefers-reduced-motion: reduce) {
+  .probe-wave path { animation: none; }
+}
 @media (hover: none) {
   .probe { display: none; }
+}
+/* プローブの当たり判定: Hero の回路（透明な太い線と、IC のピンの矩形）とスパイン（帯） */
+.hero-circuit .net-hit path { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; }
+.hero-circuit .net-hit rect { fill: transparent; pointer-events: fill; }
+.spine-hit { position: absolute; top: 0; bottom: 0; width: 14px; pointer-events: auto; }
+.spine-hit-wire { position: absolute; height: 14px; transform: translateY(-50%); pointer-events: auto; }
+.spine-hit-wire--in { left: 50%; width: 40px; }
+.spine-hit-wire--out { right: 50%; width: 50px; }
+
+/* ＝＝＝ レイヤー表示（<html data-layers="fcu bcu silks edge"> に表示中のレイヤー名を持つ）＝＝＝ */
+/* F.Cu / F.SilkS / Edge.Cuts は既定で表示、B.Cu は既定で非表示。visibility で切るのでレイアウトは変わらない */
+html:not([data-layers~="fcu"]) .layer-fcu { visibility: hidden; }
+html:not([data-layers~="silks"]) .layer-silks { visibility: hidden; }
+html:not([data-layers~="silks"]) .silk-frame { border-color: transparent; } /* 枠だけ消し、中身（BOM・BOARD INFO）は残す */
+html:not([data-layers~="silks"]) .silk-frame-label { visibility: hidden; }
+html:not([data-layers~="edge"]) .layer-edge { visibility: hidden; }
+.layer-bcu { visibility: hidden; }
+html[data-layers~="bcu"] .layer-bcu { visibility: visible; }
+.hero-circuit .bcu {
+  fill: none;
+  stroke: var(--bcu);
+  stroke-width: 3;
+  stroke-dasharray: 8 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .75;
+}
+/* ＝＝＝ 404（OPEN CIRCUIT）: 断線した配線と、隙間で時々光る火花 ＝＝＝ */
+.open-circuit { display: block; max-width: 100%; height: auto; }
+.open-circuit-trace { fill: none; stroke: var(--copper); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.open-circuit-end { fill: var(--copper); }
+.open-circuit-via { fill: var(--board); stroke: var(--copper); stroke-width: 3; }
+.open-circuit-spark {
+  fill: var(--led-glow);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: open-circuit-spark 3.4s steps(1, end) infinite;
+}
+.open-circuit-spark--2 { animation-duration: 5.1s; animation-delay: 1.3s; }
+/* 全体の 1 割ほどの時間だけ、チラッと 2 回光る */
+@keyframes open-circuit-spark {
+  0%, 84% { opacity: 0; }
+  85%, 88% { opacity: 1; }
+  89%, 92% { opacity: 0; }
+  93%, 95% { opacity: .8; }
+  96%, 100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .open-circuit-spark { animation: none; opacity: 0; }
+}
+/* レイヤーのパネルはマウスのある PC 向け。タブレットなど (hover: none) の端末では 1024px 以上でも出さない */
+@media (hover: none) {
+  .layer-panel { display: none; }
+}
+/* Edge.Cuts: ページの外周から 12px 内側に角丸の細い線 */
+.board-edge {
+  position: absolute;
+  inset: 12px;
+  border: 1px solid var(--edge);
+  border-radius: 18px;
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* ======================================================================

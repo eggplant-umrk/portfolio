@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, type CSSProperties, type ReactNode } from 
 import Image from "next/image";
 import Link from "next/link";
 import BoardSwitch from "./components/BoardSwitch";
+import LayerPanel from "./components/LayerPanel"; // レイヤー表示の切り替え（1024px 以上）
 
 // ＝＝＝ 固定ナビゲーションヘッダー ＝＝＝
 const navLinks = [
@@ -192,7 +193,7 @@ const SectionTitle = ({
     {/* 見出し行。左端のパッド（円 + 短い線）はスパインの真上に乗るよう absolute で配置する。
         見出しは overflow-hidden の箱の中からせり上がる（.reveal-mask） */}
     <div className="relative flex items-end justify-between gap-4">
-      <span className="pcb-pad" aria-hidden="true" />
+      <span className="pcb-pad layer-fcu" aria-hidden="true" />
       <Reveal variant="mask">
         <h3 className="font-display font-bold text-4xl md:text-[56px] leading-none tracking-tight text-silk">
           {title}
@@ -208,7 +209,7 @@ const SectionTitle = ({
         {/* 位置合わせマーク。TEST LOG がある行はその右に 40px 空ける。1023px 以下では非表示 */}
         {fid && (
           <span className={`fiducial hidden lg:flex items-center gap-2 shrink-0 pb-1 ${tag ? "ml-10" : "ml-4"}`} aria-hidden="true">
-            {typeof fid === "string" && <span className="font-mono text-[11px] tracking-[0.1em] text-silk-label">{fid}</span>}
+            {typeof fid === "string" && <span className="layer-silks font-mono text-[11px] tracking-[0.1em] text-silk-label">{fid}</span>}
             <span className="flex items-center justify-center w-[26px] h-[26px] rounded-full border border-line">
               <span className="block w-[10px] h-[10px] rounded-full bg-copper" />
             </span>
@@ -230,6 +231,32 @@ const SectionTitle = ({
 // 同じ層の配線は交差させない。電源（+3V3・GND）は 5px、信号は 3px
 const chipPinYs = [272, 300, 328, 356, 384, 412];
 const flowPaths = ["M1020 392 H1100 L1140 432 V560", "M1020 280 H1040 L1070 250 V88 H1096", "M1020 420 H1060 L1100 460 V560"];
+// ピンの割り当て（左 1〜6 を上から、右 7〜12 を下から）。プローブの表示用: ピン名とネット
+const leftPins = ["VCC", "NC", "NC", "NC", "NC", "GND"];
+const rightPins = ["SCL", "SDA", "NC", "OUT2", "NC", "OUT1"]; // 下から 7, 8, 9, 10, 11, 12
+const pinNet = (name: string) => (name === "VCC" ? "+3V3" : name);
+// プローブの当たり判定（ネットごとの透明な太い線。描画はしない）
+const netHits: { net: string; d: string }[] = [
+  { net: "+3V3", d: "M740 280 H690 L660 250 V170" },
+  { net: "+3V3", d: "M700 280 V296" },
+  { net: "+3V3", d: "M1187 516 H1211" },
+  { net: "+3V3", d: "M1053 516 H1029" },
+  { net: "GND", d: "M740 420 H724 L690 454 V560" },
+  { net: "GND", d: "M700 326 V348" },
+  { net: "GND", d: "M1144 88 H1168" },
+  { net: "GND", d: "M1194 170 H1212" },
+  { net: "OUT1", d: "M1020 280 H1040 L1070 250 V181" },
+  { net: "LED1", d: "M1070 153 V88 H1096" },
+  { net: "OUT2", d: "M1020 336 H1100 L1130 306 V263" },
+  { net: "LED2", d: "M1130 235 V170 H1146" },
+  { net: "SDA", d: "M1020 392 H1100 L1140 432 V560" },
+  { net: "SDA", d: "M1140 516 H1159" },
+  { net: "SCL", d: "M1020 420 H1060 L1100 460 V560" },
+  { net: "SCL", d: "M1100 516 H1081" },
+];
+// 裏の層（B.Cu）: ビアどうしをつなぐ配線。+3V3（左上のビア → プルアップ R3・R4 の +3V3 ビア）と
+// GND（D1・D2 のカソードのビア → C2 の GND ビア）。レイヤー表示で B.Cu を出したときだけ見える
+const backTraces = ["M660 170 V536 H1211 V516", "M1022 536 V516", "M1168 88 H1212 V170", "M1212 170 V348 H700"];
 
 // チップ部品（抵抗: 18×34 黒 / コンデンサ: 16×30 ベージュ、両端が端子）。print は本体への印字
 const SmdPart = ({ cx, cy, kind, print, horizontal = false }: { cx: number; cy: number; kind: "r" | "c"; print?: string; horizontal?: boolean }) => {
@@ -267,9 +294,9 @@ const SmdPart = ({ cx, cy, kind, print, horizontal = false }: { cx: number; cy: 
 // LED（2 端子）: 左にアノード、右にカソードのパッド。シルクの外形線はカソード側を平らにする
 const Led = ({ cx, cy, cls }: { cx: number; cy: number; cls: string }) => (
   <g>
-    <rect className="pad" x={cx - 29} y={cy - 6} width="10" height="12" rx="1.5" />
-    <rect className="pad" x={cx + 19} y={cy - 6} width="10" height="12" rx="1.5" />
-    <path className="silk" d={`M${cx + 10} ${cy - 17.3} A20 20 0 1 0 ${cx + 10} ${cy + 17.3} Z`} />
+    <rect className="pad layer-fcu" x={cx - 29} y={cy - 6} width="10" height="12" rx="1.5" />
+    <rect className="pad layer-fcu" x={cx + 19} y={cy - 6} width="10" height="12" rx="1.5" />
+    <path className="silk layer-silks" d={`M${cx + 10} ${cy - 17.3} A20 20 0 1 0 ${cx + 10} ${cy + 17.3} Z`} />
     <circle className={`led-glow ${cls}`} cx={cx} cy={cy} r="45" fill="url(#led-glow-grad)" />
     <circle className={`led ${cls}`} cx={cx} cy={cy} r="14" />
   </g>
@@ -283,6 +310,8 @@ const HeroCircuit = () => (
         <stop offset="1" stopColor="var(--led-glow)" stopOpacity="0" />
       </radialGradient>
     </defs>
+    {/* ＝＝ F.Cu（表の銅）: 配線・ビア・パッド。レイヤー表示で切り替わる ＝＝ */}
+    <g className="layer-fcu">
     {/* 電源: 1 番 +3V3 → 左上のビア、6 番 GND → 下端 */}
     <path className="trace pwr" d="M740 280 H690 L660 250 V170" />
     <path className="trace pwr t2" d="M740 420 H724 L690 454 V560" />
@@ -327,6 +356,13 @@ const HeroCircuit = () => (
         <rect key={`pr${y}`} x="998" y={y - 2} width="24" height="20" rx="2" />
       ))}
     </g>
+    </g>
+    {/* ＝＝ B.Cu（裏の銅）: 半透明の破線。IC の下を通る部分は IC に隠れる ＝＝ */}
+    <g className="layer-bcu">
+      {backTraces.map((d) => (
+        <path key={d} className="bcu" d={d} />
+      ))}
+    </g>
     {/* 部品: C2 100n、R5 / R6 330、R3 / R4 4k7 */}
     <SmdPart cx={700} cy={311} kind="c" />
     <SmdPart cx={1070} cy={167} kind="r" print="331" />
@@ -354,10 +390,11 @@ const HeroCircuit = () => (
         AIT EEE · NAGOYA
       </text>
     </g>
-    <g fontFamily="var(--font-jetbrains), 'JetBrains Mono', monospace" fontSize="12" fill="var(--silk-muted)">
-      <Led cx={1120} cy={88} cls="l1" />
+    <Led cx={1120} cy={88} cls="l1" />
+    <Led cx={1170} cy={170} cls="l2" />
+    {/* ＝＝ F.SilkS（シルク）: 部品番号・ネット名 ＝＝ */}
+    <g className="layer-silks" fontFamily="var(--font-jetbrains), 'JetBrains Mono', monospace" fontSize="12" fill="var(--silk-muted)">
       <text x="1104" y="62">D1</text>
-      <Led cx={1170} cy={170} cls="l2" />
       <text x="1150" y="140">D2</text>
       <text x="764" y="238">U10</text>
       {/* 部品番号（シルク） */}
@@ -375,6 +412,18 @@ const HeroCircuit = () => (
       <text x="1218" y="541" textAnchor="end" fill="var(--silk-label)">+3V3</text>
       <text x="1010" y="520" textAnchor="end" fill="var(--silk-label)">+3V3</text>
     </g>
+    {/* ＝＝ プローブの当たり判定（透明。F.Cu を消したときは判定も消える） ＝＝ */}
+    <g className="net-hit layer-fcu">
+      {netHits.map((n, i) => (
+        <path key={i} d={n.d} data-net={n.net} />
+      ))}
+      {chipPinYs.map((y, i) => (
+        <rect key={`hl${y}`} x="738" y={y - 2} width="24" height="20" data-net={pinNet(leftPins[i])} data-label={`U10-${i + 1} ${leftPins[i]}`} />
+      ))}
+      {chipPinYs.map((y, i) => (
+        <rect key={`hr${y}`} x="998" y={y - 2} width="24" height="20" data-net={pinNet(rightPins[5 - i])} data-label={`U10-${12 - i} ${rightPins[5 - i]}`} />
+      ))}
+    </g>
   </svg>
 );
 
@@ -387,15 +436,18 @@ const SpineBranch = ({ cls, refName, value, print, net, left, top, width, pinTop
   left: number; top: number; width: number; pinTop: number; pinBottom: number; lands?: boolean;
 }) => (
   <span className="spine-branch hidden md:block" style={{ left, top, width }} aria-hidden="true">
-    <span className="spine-wire spine-wire--in" style={{ top: pinTop }} />
-    <span className="spine-wire spine-wire--out" style={{ top: pinBottom }} />
-    {net === "GND" && <span className="spine-via" style={{ top: pinBottom }} />}
-    <span className={`spine-net${net === "GND" ? " spine-net--via" : ""}`} style={{ top: pinBottom }}>{net}</span>
-    <span className={`spine-part ${cls}`}>
+    <span className="spine-wire spine-wire--in layer-fcu" style={{ top: pinTop }} />
+    <span className="spine-wire spine-wire--out layer-fcu" style={{ top: pinBottom }} />
+    {net === "GND" && <span className="spine-via layer-fcu" style={{ top: pinBottom }} />}
+    <span className={`spine-net layer-silks${net === "GND" ? " spine-net--via" : ""}`} style={{ top: pinBottom }}>{net}</span>
+    {/* プローブの当たり判定（上の配線 = +3V3、下の配線とビア = net） */}
+    <span className="spine-hit-wire spine-hit-wire--in layer-fcu" style={{ top: pinTop }} data-net="+3V3" />
+    <span className="spine-hit-wire spine-hit-wire--out layer-fcu" style={{ top: pinBottom }} data-net={net} />
+    <span className={`spine-part ${cls}`} data-net={net} data-label={`${refName} ${value}`}>
       {print && <span className="spine-part-print">{print}</span>}
-      {lands && <span className="spine-land spine-land--top" />}
-      {lands && <span className="spine-land spine-land--bottom" />}
-      <span className="spine-part-label"><span className="ref">{refName}</span> <span className="val">{value}</span></span>
+      {lands && <span className="spine-land spine-land--top layer-fcu" />}
+      {lands && <span className="spine-land spine-land--bottom layer-fcu" />}
+      <span className="spine-part-label layer-silks"><span className="ref">{refName}</span> <span className="val">{value}</span></span>
     </span>
   </span>
 );
@@ -636,13 +688,15 @@ export default function Home() {
 
   return (
     <div className="pcb-board flex flex-col items-center w-full overflow-hidden relative text-silk">
+      {/* ＝＝＝ Edge.Cuts: 基板の外形線（ページの外周から 12px 内側） ＝＝＝ */}
+      <span className="board-edge layer-edge" aria-hidden="true" />
 
       {/* ＝＝＝ 取り付け穴 H1・H2（ヘッダーの下端から 24px 下、左右の端から 28px。767px 以下では非表示） ＝＝＝ */}
       <span className="mount-hole left-7 top-[calc(var(--header-h)+24px)]" aria-hidden="true">
-        <span className="mount-hole-label left-[calc(100%+18px)]">H1</span>
+        <span className="mount-hole-label layer-silks left-[calc(100%+18px)]">H1</span>
       </span>
       <span className="mount-hole right-7 top-[calc(var(--header-h)+24px)]" aria-hidden="true">
-        <span className="mount-hole-label right-[calc(100%+18px)]">H2</span>
+        <span className="mount-hole-label layer-silks right-[calc(100%+18px)]">H2</span>
       </span>
 
       {/* ＝＝＝ ナビゲーションヘッダー ＝＝＝ */}
@@ -794,12 +848,12 @@ export default function Home() {
       <div data-pause-offscreen className="relative isolate w-full">
         <div className="pointer-events-none absolute inset-0 z-0 px-8 md:px-24" aria-hidden="true">
           <div className="relative h-full max-w-7xl mx-auto">
-            <span className="pcb-spine left-[21.5px] md:left-[55.5px]" />
+            <span className="pcb-spine layer-fcu left-[21.5px] md:left-[55.5px]" />
           </div>
         </div>
 
         {/* ＝＝＝ 背景の配線パターン（本文コンテナの外側の余白。1360px 以上のみ、本文より下に描く） ＝＝＝ */}
-        <svg className="trace-bg trace-bg-left" aria-hidden="true">
+        <svg className="trace-bg trace-bg-left layer-fcu" aria-hidden="true">
           <defs>
             <pattern id="trace-pattern-left" width="160" height="360" patternUnits="userSpaceOnUse">
               <g className="trace-bg-lines">
@@ -816,7 +870,7 @@ export default function Home() {
           </defs>
           <rect width="100%" height="100%" fill="url(#trace-pattern-left)" />
         </svg>
-        <svg className="trace-bg trace-bg-right" aria-hidden="true">
+        <svg className="trace-bg trace-bg-right layer-fcu" aria-hidden="true">
           <defs>
             <pattern id="trace-pattern-right" width="160" height="420" patternUnits="userSpaceOnUse">
               <g className="trace-bg-lines">
@@ -838,8 +892,8 @@ export default function Home() {
       <section id="about" className="w-full px-8 md:px-24 py-32 scroll-mt-[var(--header-h)]">
         <div className="relative max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
           {/* テストポイント TP1: スパインの始まり（見出しより上）。中心をスパイン（22px / 56px）に合わせる */}
-          <span className="spine-tp left-[14.5px] md:left-[48.5px] -top-[73px]" aria-hidden="true">
-            <span className="spine-tp-label">TP1 · +3V3</span>
+          <span className="spine-tp layer-fcu left-[14.5px] md:left-[48.5px] -top-[73px]" aria-hidden="true">
+            <span className="spine-tp-label layer-silks">TP1 · +3V3</span>
           </span>
           <SectionTitle part="U1" index="01" title="About Me" fid="FID1" />
           <div className="flex flex-col lg:flex-row gap-16">
@@ -951,10 +1005,10 @@ export default function Home() {
       <footer id="contact" className="relative w-full px-8 md:px-24 pt-32 pb-12 border-t border-line scroll-mt-[var(--header-h)]">
         {/* ＝＝＝ 取り付け穴 H3・H4（フッターの上端から 24px 上、左右の端から 28px） ＝＝＝ */}
         <span className="mount-hole left-7 -top-[54px]" aria-hidden="true">
-          <span className="mount-hole-label left-[calc(100%+18px)]">H3</span>
+          <span className="mount-hole-label layer-silks left-[calc(100%+18px)]">H3</span>
         </span>
         <span className="mount-hole right-7 -top-[54px]" aria-hidden="true">
-          <span className="mount-hole-label right-[calc(100%+18px)]">H4</span>
+          <span className="mount-hole-label layer-silks right-[calc(100%+18px)]">H4</span>
         </span>
         <div className="relative max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
           {/* Works と Contact の間の抵抗 R2（+3V3 → R2 → SDA。リード線の先はスルーホールのランド） */}
@@ -981,9 +1035,9 @@ export default function Home() {
                   className="pin flex flex-col items-start gap-3"
                 >
                   {/* ピン番号 */}
-                  <span className="font-mono text-[10px] leading-none text-silk-label" aria-hidden="true">{i + 1}</span>
+                  <span className="layer-silks font-mono text-[10px] leading-none text-silk-label" aria-hidden="true">{i + 1}</span>
                   {/* 1 番ピン（X）だけ四角いパッド、2・3 番は丸いパッド */}
-                  <span className={`pin-pad${i > 0 ? " pin-pad--round" : ""}`} aria-hidden="true" />
+                  <span className={`pin-pad layer-fcu${i > 0 ? " pin-pad--round" : ""}`} aria-hidden="true" />
                   <span className="pin-label flex items-center gap-2 font-mono text-[13px] text-silk transition-colors duration-200">
                     <ContactIcon kind={link.icon} />
                     {link.label}
@@ -1010,8 +1064,17 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+        {/* ＝＝＝ プローブの当たり判定: スパイン（+3V3）の上に重ねる 14px 幅の透明な帯。本文には重ならない ＝＝＝ */}
+        <div className="pointer-events-none absolute inset-0 z-10 px-8 md:px-24" aria-hidden="true">
+          <div className="relative h-full max-w-7xl mx-auto">
+            <span className="spine-hit layer-fcu left-[16.5px] md:left-[50.5px]" data-net="+3V3" />
+          </div>
+        </div>
       </div>
       {/* ＝＝＝ /基板スパイン ＝＝＝ */}
+      {/* ＝＝＝ レイヤー表示の切り替え（左下に固定、1024px 以上のみ） ＝＝＝ */}
+      <LayerPanel />
     </div>
   );
 }

@@ -3,12 +3,45 @@
 import { useEffect, useRef } from "react";
 
 // ＝＝＝ 測定プローブ型カーソル（PC のみ）＝＝＝
-// マウス位置に十字線と小円を重ね、右下にビューポート座標と演出用の電圧値を出す。
+// マウス位置に十字線と小円を重ね、右下にビューポート座標と「いま乗っている配線（ネット）」の測定値を出す。
+// ネットの判定は、回路の装飾に重ねた当たり判定用の要素（data-net / data-label）を e.target から辿って行う。
 // 位置は transform で動かし、描画は requestAnimationFrame にまとめて負荷を抑える。
+
+// ネットごとの表示値（Hero の回路と左のスパインの接続に合わせる）
+//   +3V3: 電源 / GND / RST: プルアップで High / LED1・LED2: 電流制限抵抗と LED の間（LED の順方向電圧）
+//   OUT1・OUT2: IC の 12 番・10 番ピンと抵抗の間（出力 High）/ NC: 未接続ピン
+const NET_VALUE: Record<string, string> = {
+  "+3V3": "3.30 V",
+  GND: "0.00 V",
+  RST: "3.30 V",
+  LED1: "2.00 V",
+  LED2: "2.00 V",
+  OUT1: "3.30 V",
+  OUT2: "3.30 V",
+  NC: "-- V",
+};
+
+// I2C の波形（幅 120px を 1 周期として 2 周期分を描き、左へ流す）。High = y 4、Low = y 20
+//   0〜20: 待機（両方 High）→ 20: SDA が下がる（スタートコンディション、SCL は High のまま）
+//   28〜106: クロック 7 発。SDA は SCL が Low の間だけ変わる（1,0,1,1,0,0,0）
+//   106: SCL が High に戻り、110: SDA が上がる（ストップコンディション）→ 待機
+const sclPeriod = (o: number) =>
+  `M${o} 4 H${o + 28} V20 H${o + 34} V4 H${o + 40} V20 H${o + 46} V4 H${o + 52} V20 H${o + 58} V4 H${o + 64} V20 ` +
+  `H${o + 70} V4 H${o + 76} V20 H${o + 82} V4 H${o + 88} V20 H${o + 94} V4 H${o + 100} V20 H${o + 106} V4 H${o + 120}`;
+const sdaPeriod = (o: number) =>
+  `M${o} 4 H${o + 20} V20 H${o + 30} V4 H${o + 42} V20 H${o + 54} V4 H${o + 78} V20 H${o + 110} V4 H${o + 120}`;
+const WAVE: Record<string, string> = {
+  SCL: `${sclPeriod(0)} ${sclPeriod(120)}`,
+  SDA: `${sdaPeriod(0)} ${sdaPeriod(120)}`,
+};
+
 export default function ProbeCursor() {
   const rootRef = useRef<HTMLDivElement>(null);
   const xyRef = useRef<HTMLSpanElement>(null);
-  const voltRef = useRef<HTMLSpanElement>(null);
+  const nameRef = useRef<HTMLSpanElement>(null);
+  const valueRef = useRef<HTMLSpanElement>(null);
+  const waveRef = useRef<HTMLSpanElement>(null);
+  const wavePathRef = useRef<SVGPathElement>(null);
 
   useEffect(() => {
     // ホバーできない端末（スマホ・タブレット）では何もしない
@@ -16,26 +49,51 @@ export default function ProbeCursor() {
 
     const root = rootRef.current;
     const xy = xyRef.current;
-    const volt = voltRef.current;
-    if (!root || !xy || !volt) return;
+    const name = nameRef.current;
+    const value = valueRef.current;
+    const wave = waveRef.current;
+    const wavePath = wavePathRef.current;
+    if (!root || !xy || !name || !value || !wave || !wavePath) return;
 
     let x = 0;
     let y = 0;
+    let net = "";
+    let label = "";
+    let shownNet: string | null = null;
+    let shownLabel: string | null = null;
     let raf = 0;
     let visible = false;
 
     const render = () => {
       raf = 0;
-      const ix = Math.round(x);
-      const iy = Math.round(y);
       root.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      xy.textContent = `X ${ix} · Y ${iy}`;
-      volt.textContent = `CH1 ${(((ix * 7 + iy * 3) % 330) / 100).toFixed(2)} V`;
+      xy.textContent = `X ${Math.round(x)} · Y ${Math.round(y)}`;
+      // ネットやラベルが変わったときだけ表示枠の文字を書き換える
+      if (net !== shownNet || label !== shownLabel) {
+        shownNet = net;
+        shownLabel = label;
+        name.textContent = label || net || "CH1";
+        const d = WAVE[net];
+        if (d) {
+          // SDA / SCL: 電圧の代わりに波形
+          wavePath.setAttribute("d", d);
+          wave.hidden = false;
+          value.hidden = true;
+        } else {
+          wave.hidden = true;
+          value.hidden = false;
+          value.textContent = net ? (NET_VALUE[net] ?? "-- V") : "-- V";
+        }
+      }
     };
 
     const onMove = (e: MouseEvent) => {
       x = e.clientX;
       y = e.clientY;
+      const target = e.target as Element | null;
+      const hit = target && typeof target.closest === "function" ? target.closest<Element>("[data-net]") : null;
+      net = hit?.getAttribute("data-net") ?? "";
+      label = hit?.getAttribute("data-label") ?? "";
       if (!visible) {
         root.style.opacity = "1";
         visible = true;
@@ -65,7 +123,14 @@ export default function ProbeCursor() {
       <span className="probe-dot" />
       <div className="probe-readout">
         <span ref={xyRef}>X 0 · Y 0</span>
-        <span ref={voltRef}>CH1 0.00 V</span>
+        <span ref={nameRef} className="probe-name">CH1</span>
+        <span ref={valueRef}>-- V</span>
+        {/* I2C の波形（SDA / SCL に乗ったときだけ表示） */}
+        <span ref={waveRef} className="probe-wave" hidden>
+          <svg width="120" height="24" viewBox="0 0 120 24">
+            <path ref={wavePathRef} d="" />
+          </svg>
+        </span>
       </div>
     </div>
   );
