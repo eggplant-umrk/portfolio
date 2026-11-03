@@ -171,16 +171,19 @@ const Reveal = ({
 
 // ＝＝＝ 部品番号付きセクション見出し（マスクリビール） ＝＝＝
 // part: 基板上の部品番号（U1 / U2 / U3 / J1）、index: 連番（01〜04）、tag: 見出し右端の小さな注記
+// fid: 見出し行の右端に置く位置合わせマーク（文字列ならそのラベル付き、true ならラベルなし）
 const SectionTitle = ({
   part,
   index,
   title,
   tag,
+  fid,
 }: {
   part: string;
   index: string;
   title: string;
   tag?: string;
+  fid?: string | true;
 }) => (
   <div className="mb-12 md:mb-16">
     <Reveal variant="fade" className="font-mono text-[13px] tracking-[0.14em] text-accent mb-4">
@@ -195,12 +198,23 @@ const SectionTitle = ({
           {title}
         </h3>
       </Reveal>
-      {/* スマホでは見出しの幅を潰さないよう、ラベル行の右端（見出しの上）に逃がす */}
-      {tag && (
-        <span className="font-mono text-[12px] tracking-[0.12em] text-silk-label shrink-0 absolute right-0 -top-9 md:static md:pb-1">
-          {tag}
-        </span>
-      )}
+      <div className="flex items-end shrink-0">
+        {/* スマホでは見出しの幅を潰さないよう、ラベル行の右端（見出しの上）に逃がす */}
+        {tag && (
+          <span className="font-mono text-[12px] tracking-[0.12em] text-silk-label shrink-0 absolute right-0 -top-9 md:static md:pb-1">
+            {tag}
+          </span>
+        )}
+        {/* 位置合わせマーク。TEST LOG がある行はその右に 40px 空ける。1023px 以下では非表示 */}
+        {fid && (
+          <span className={`fiducial hidden lg:flex items-center gap-2 shrink-0 pb-1 ${tag ? "ml-10" : "ml-4"}`} aria-hidden="true">
+            {typeof fid === "string" && <span className="font-mono text-[11px] tracking-[0.1em] text-silk-label">{fid}</span>}
+            <span className="flex items-center justify-center w-[26px] h-[26px] rounded-full border border-line">
+              <span className="block w-[10px] h-[10px] rounded-full bg-copper" />
+            </span>
+          </span>
+        )}
+      </div>
     </div>
   </div>
 );
@@ -264,6 +278,11 @@ const HeroCircuit = () => (
       <circle className="led l2" cx="1170" cy="170" r="14" />
       <text x="1150" y="140">D2</text>
       <text x="764" y="238">U0</text>
+      {/* シルク印刷の注記（配線・チップとは重ならない位置） */}
+      <text x="672" y="164" fill="var(--silk-label)">+3V3</text>
+      <text x="628" y="552" fill="var(--silk-label)">GND</text>
+      <text x="1148" y="552" fill="var(--silk-label)">SDA</text>
+      <text x="1110" y="476" fill="var(--silk-label)">SCL</text>
     </g>
   </svg>
 );
@@ -505,6 +524,14 @@ export default function Home() {
   return (
     <div className="pcb-board flex flex-col items-center w-full overflow-hidden relative text-silk">
 
+      {/* ＝＝＝ 取り付け穴 H1・H2（ヘッダーの下端から 24px 下、左右の端から 28px。767px 以下では非表示） ＝＝＝ */}
+      <span className="mount-hole left-7 top-[calc(var(--header-h)+24px)]" aria-hidden="true">
+        <span className="mount-hole-label left-[calc(100%+18px)]">H1</span>
+      </span>
+      <span className="mount-hole right-7 top-[calc(var(--header-h)+24px)]" aria-hidden="true">
+        <span className="mount-hole-label right-[calc(100%+18px)]">H2</span>
+      </span>
+
       {/* ＝＝＝ ナビゲーションヘッダー ＝＝＝ */}
       <Header delayBase={0.2} />
 
@@ -651,17 +678,57 @@ export default function Home() {
       {/* ＝＝＝ 基板スパイン：About〜Contact の左を縦に流れる配線（Hero には通さない） ＝＝＝ */}
       {/* 各セクションと同じ max-w / padding の透明な箱を重ね、その中で配線を絶対配置することで
           「本文コンテナの左端から 22px（PC 56px）内側」に 1 本の線を通す */}
-      <div data-pause-offscreen className="relative w-full">
+      <div data-pause-offscreen className="relative isolate w-full">
         <div className="pointer-events-none absolute inset-0 z-0 px-8 md:px-24" aria-hidden="true">
           <div className="relative h-full max-w-7xl mx-auto">
             <span className="pcb-spine left-[22px] md:left-[56px]" />
           </div>
         </div>
 
+        {/* ＝＝＝ 背景の配線パターン（本文コンテナの外側の余白。1360px 以上のみ、本文より下に描く） ＝＝＝ */}
+        <svg className="trace-bg trace-bg-left" aria-hidden="true">
+          <defs>
+            <pattern id="trace-pattern-left" width="160" height="360" patternUnits="userSpaceOnUse">
+              <g className="trace-bg-lines">
+                <path d="M20 0 V60 L50 90 V200 L20 230 V360" />
+                <path d="M70 0 V40 L100 70 V150 H140" />
+                <path d="M120 200 V260 L90 290 V360" />
+              </g>
+              <g className="trace-bg-vias">
+                <circle cx="140" cy="150" r="6" />
+                <circle cx="120" cy="200" r="6" />
+                <circle cx="50" cy="145" r="4" />
+              </g>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#trace-pattern-left)" />
+        </svg>
+        <svg className="trace-bg trace-bg-right" aria-hidden="true">
+          <defs>
+            <pattern id="trace-pattern-right" width="160" height="420" patternUnits="userSpaceOnUse">
+              <g className="trace-bg-lines">
+                <path d="M140 0 V80 L110 110 V240 L140 270 V420" />
+                <path d="M90 0 V30 L60 60 V180 H20" />
+                <path d="M40 260 H80 L100 280 V420" />
+              </g>
+              <g className="trace-bg-vias">
+                <circle cx="20" cy="180" r="6" />
+                <circle cx="40" cy="260" r="6" />
+                <circle cx="110" cy="175" r="4" />
+              </g>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#trace-pattern-right)" />
+        </svg>
+
       {/* ＝＝＝ About（自己紹介）セクション ＝＝＝ */}
       <section id="about" className="w-full px-8 md:px-24 py-32 scroll-mt-[var(--header-h)]">
-        <div className="max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
-          <SectionTitle part="U1" index="01" title="About Me" />
+        <div className="relative max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
+          {/* テストポイント TP1: スパインの始まり（見出しより上）。中心をスパイン（22px / 56px）に合わせる */}
+          <span className="spine-tp left-[14.5px] md:left-[48.5px] -top-[73px]" aria-hidden="true">
+            <span className="spine-tp-label">TP1 · VCC</span>
+          </span>
+          <SectionTitle part="U1" index="01" title="About Me" fid="FID1" />
           <div className="flex flex-col lg:flex-row gap-16">
 
           {/* 左: 本文 */}
@@ -682,6 +749,8 @@ export default function Home() {
           {/* 右: 部品表（BOM）としてのスキル一覧 */}
           <Reveal margin="-100px" delay={0.2} className="w-full lg:w-[320px] lg:shrink-0">
             <p className="font-mono text-[12px] tracking-[0.14em] text-silk-label mb-4">BOM — SKILLS &amp; TECHNOLOGIES</p>
+            <div className="silk-frame">
+              <span className="silk-frame-label" aria-hidden="true">U1A · BOM</span>
             <table className="bom w-full font-mono text-[14px]">
               <thead>
                 <tr>
@@ -698,6 +767,7 @@ export default function Home() {
                 ))}
               </tbody>
             </table>
+            </div>
           </Reveal>
 
           </div>
@@ -706,8 +776,12 @@ export default function Home() {
 
       {/* ＝＝＝ ニュース＆アクティビティ セクション ＝＝＝ */}
       <section id="news" className="w-full px-8 md:px-24 py-24 scroll-mt-[var(--header-h)]">
-        <div className="max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
-          <SectionTitle part="U2" index="02" title="Activity & News" tag="TEST LOG" />
+        <div className="relative max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
+          {/* About と News の間の抵抗 R1（セクションの切れ目と見出しのパッドの中間） */}
+          <span className="spine-part spine-part--r left-[16.5px] md:left-[50.5px] -top-[31px]" aria-hidden="true">
+            <span className="spine-part-label"><span className="ref">R1</span> <span className="val">10k</span></span>
+          </span>
+          <SectionTitle part="U2" index="02" title="Activity & News" tag="TEST LOG" fid />
 
           {/* 「日付 | 本文」の2列グリッド（スマホは縦積み） */}
           <div id="news-list" className="max-w-3xl flex flex-col border-t-[1.5px] border-line-strong">
@@ -746,8 +820,12 @@ export default function Home() {
 
       {/* ＝＝＝ プロジェクトセクション ＝＝＝ */}
       <section id="projects" className="w-full px-8 md:px-24 py-32 scroll-mt-[var(--header-h)]">
-        <div className="max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
-          <SectionTitle part="U3" index="03" title="Selected Works" />
+        <div className="relative max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
+          {/* News と Works の間のコンデンサ C1 */}
+          <span className="spine-part spine-part--c left-[16.5px] md:left-[50.5px] -top-[47px]" aria-hidden="true">
+            <span className="spine-part-label"><span className="ref">C1</span> <span className="val">100n</span></span>
+          </span>
+          <SectionTitle part="U3" index="03" title="Selected Works" fid="FID2" />
 
           {/* 1件目は横幅いっぱい、2〜5件目は2列（スマホは1列）。端子が左右に 10px はみ出すぶん横の余白を確保 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-y-[56px] gap-x-[64px] px-[10px]">
@@ -761,8 +839,19 @@ export default function Home() {
       </section>
 
       {/* ＝＝＝ フッター（コンタクトセクション） ＝＝＝ */}
-      <footer id="contact" className="w-full px-8 md:px-24 pt-32 pb-12 border-t border-line scroll-mt-[var(--header-h)]">
-        <div className="max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
+      <footer id="contact" className="relative w-full px-8 md:px-24 pt-32 pb-12 border-t border-line scroll-mt-[var(--header-h)]">
+        {/* ＝＝＝ 取り付け穴 H3・H4（フッターの上端から 24px 上、左右の端から 28px） ＝＝＝ */}
+        <span className="mount-hole left-7 -top-[54px]" aria-hidden="true">
+          <span className="mount-hole-label left-[calc(100%+18px)]">H3</span>
+        </span>
+        <span className="mount-hole right-7 -top-[54px]" aria-hidden="true">
+          <span className="mount-hole-label right-[calc(100%+18px)]">H4</span>
+        </span>
+        <div className="relative max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
+          {/* Works と Contact の間の抵抗 R2 */}
+          <span className="spine-part spine-part--r left-[16.5px] md:left-[50.5px] -top-[47px]" aria-hidden="true">
+            <span className="spine-part-label"><span className="ref">R2</span> <span className="val">4k7</span></span>
+          </span>
           <SectionTitle part="J1" index="04" title="Get in Touch" />
 
           <Reveal margin="0px" delay={0.1} className="max-w-md mb-12">
@@ -771,11 +860,12 @@ export default function Home() {
             </p>
           </Reveal>
 
-          {/* コネクタ: 点線枠の中に各連絡先を「ピン」として並べる */}
-          <Reveal margin="0px" delay={0.2} className="max-w-3xl border-[1.5px] border-dashed border-line-strong rounded-[6px] px-8 py-7 mb-24">
+          {/* コネクタ: 点線枠の中に各連絡先を「ピン」として並べる。右側（足りなければ下）に BOARD INFO */}
+          <div className="flex flex-wrap items-start gap-6 mb-24">
+          <Reveal margin="0px" delay={0.2} className="max-w-3xl border-[1.5px] border-dashed border-line-strong rounded-[6px] px-8 py-7">
             <p className="font-mono text-[12px] tracking-[0.12em] text-silk-label mb-6">J1 — CONNECTOR</p>
             <div className="flex flex-wrap gap-7">
-              {contactLinks.map((link) => (
+              {contactLinks.map((link, i) => (
                 <a
                   key={link.href}
                   href={link.href}
@@ -783,6 +873,8 @@ export default function Home() {
                   rel={link.external ? "noopener noreferrer" : undefined}
                   className="pin flex flex-col items-start gap-3"
                 >
+                  {/* ピン番号 */}
+                  <span className="font-mono text-[10px] leading-none text-silk-label" aria-hidden="true">{i + 1}</span>
                   <span className="pin-pad" aria-hidden="true" />
                   <span className="pin-label flex items-center gap-2 font-mono text-[13px] text-silk transition-colors duration-200">
                     <ContactIcon kind={link.icon} />
@@ -792,6 +884,13 @@ export default function Home() {
               ))}
             </div>
           </Reveal>
+          <Reveal margin="0px" delay={0.3}>
+            <div className="silk-frame" aria-hidden="true">
+              <span className="silk-frame-label">BOARD INFO</span>
+              <p className="font-mono text-[11px] leading-[1.7] tracking-[0.12em] text-silk-label whitespace-pre">{"RU-PORTFOLIO\nREV 2026.11 · 2 LAYER\nDESIGNED IN NAGOYA"}</p>
+            </div>
+          </Reveal>
+          </div>
 
           {/* フッター（従来の「BACK TO TOP ↑」リンクは残す） */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-8 border-t border-line font-mono text-[12px] tracking-[0.12em] text-silk-label">
