@@ -413,7 +413,9 @@ body {
 /* ＝＝＝ Selected Works: IC チップ型カード ＝＝＝ */
 .work-card { transition: transform .35s ease; }
 .work-card:hover { transform: translateY(-6px); }
-/* チップ本体の左右に端子（10px 幅、上下 24px 内側） */
+/* チップ本体の左右に端子（10px 幅、上下 24px 内側）。
+   10×10px のタイルを background-repeat: space で縦に並べ、どの高さでも途中で切れず、
+   一番上と一番下の端子が上下の余白にぴったり付く。左右は同じ高さなので本数・位置も一致する */
 .chip-body::before,
 .chip-body::after {
   content: "";
@@ -421,14 +423,16 @@ body {
   top: 24px;
   bottom: 24px;
   width: 10px;
-  background: repeating-linear-gradient(180deg, var(--chip-pin) 0 10px, transparent 10px 22px);
+  background-image: linear-gradient(var(--chip-pin), var(--chip-pin));
+  background-size: 10px 10px;
+  background-repeat: space;
   transition: filter .35s;
 }
 .chip-body::before { left: -10px; }
 .chip-body::after { right: -10px; }
 .work-card:hover .chip-body::before,
 .work-card:hover .chip-body::after {
-  background: repeating-linear-gradient(180deg, var(--chip-pin-hot) 0 10px, transparent 10px 22px);
+  background-image: linear-gradient(var(--chip-pin-hot), var(--chip-pin-hot));
   filter: drop-shadow(0 0 4px var(--led-glow));
 }
 /* 上辺中央の切り欠き（下側が半円） */
