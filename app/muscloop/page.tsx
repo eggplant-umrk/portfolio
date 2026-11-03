@@ -1,8 +1,16 @@
 import Image from "next/image";
 import BoardSwitch from "../components/BoardSwitch";
+import { workMetadata } from "../lib/seo";
 import type { CSSProperties } from "react";
 import BackButton from "../components/BackButton";
 import RevealInit from "../components/RevealInit";
+
+// 検索向け: title「作品名 | 梅澤 陸 (Riku Umezawa)」、description はページ冒頭の説明文の最初の 1 文（Overview の節が無いため）、canonical / og / twitter
+export const metadata = workMetadata({
+  name: "muscloop",
+  description: "10〜20代の若年層をターゲットにした、モチベーションを維持するための新感覚フィットネスサポートアプリ。",
+  path: "/muscloop",
+});
 
 export default function MuscloopDetail() {
   return (

@@ -1,8 +1,16 @@
 import Image from "next/image";
 import BoardSwitch from "../components/BoardSwitch";
+import { workMetadata } from "../lib/seo";
 import type { CSSProperties } from "react";
 import BackButton from "../components/BackButton";
 import RevealInit from "../components/RevealInit";
+
+// 検索向け: title「作品名 | 梅澤 陸 (Riku Umezawa)」、description は Overview の最初の 1 文、canonical / og / twitter
+export const metadata = workMetadata({
+  name: "TSUNAGU",
+  description: "TSUNAGUは、災害時に避難所の状況を収集・可視化するOffline First型の報告プラットフォームです。",
+  path: "/tsunagu",
+});
 
 export default function TsunaguDetail() {
   return (
