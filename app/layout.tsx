@@ -36,8 +36,18 @@ const zenKakuGothicNew = localFont({
 });
 
 export const metadata: Metadata = {
+  // og:image / twitter:image（app/opengraph-image.tsx ほか）の URL をこのオリジンで解決する
+  metadataBase: new URL("https://eggplant-portfolio-rho.vercel.app"),
   title: "Riku Umezawa | Portfolio",
   description: "rikuのポートフォリオサイトです。パソコン推奨です",
+  openGraph: {
+    type: "website",
+    locale: "ja_JP",
+    siteName: "Riku Umezawa | Portfolio",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({
@@ -50,6 +60,7 @@ export default function RootLayout({
       lang="ja"
       className={`${chakraPetch.variable} ${jetBrainsMono.variable} ${zenKakuGothicNew.variable} h-full antialiased scroll-smooth`}
       data-board="white"
+      data-layers="fcu silks edge"
       suppressHydrationWarning
     >
       <head>
@@ -60,13 +71,16 @@ export default function RootLayout({
                読み込み時に別の色が映らないようにする。無い・読めない・不正値なら既定の white のまま。
                旧キー "board" が残っていれば portfolio_board に移して削除する。OS のライト/ダーク設定には連動させない。
             2) 初回訪問: sessionStorage が無くハッシュも無ければ <html data-intro="play"> を付けてオープニングを出す。
-            訪問済みフラグの書き込みは app/page.tsx のマウント時（従来どおり） */}
+            訪問済みフラグの書き込みは app/page.tsx のマウント時（従来どおり）
+            3) レイヤー表示: localStorage "portfolio_layers"（空白区切り。fcu / bcu / silks / edge のみ有効）を
+               <html data-layers> に反映し、リロード時にちらつかないようにする */}
         <script
           dangerouslySetInnerHTML={{
             __html:
               'try{var b=localStorage.getItem("portfolio_board");if(!b){var o=localStorage.getItem("board");if(o){localStorage.setItem("portfolio_board",o);localStorage.removeItem("board");b=o}}' +
               'if(b==="green"||b==="blue"){document.documentElement.setAttribute("data-board",b);var m=document.querySelector("meta[name=theme-color]");if(m){m.setAttribute("content",b==="green"?"#0D2E22":"#10325A")}}}catch(e){}' +
-              'try{if(!sessionStorage.getItem("portfolio_visited")&&!location.hash){document.documentElement.setAttribute("data-intro","play")}}catch(e){}',
+              'try{if(!sessionStorage.getItem("portfolio_visited")&&!location.hash){document.documentElement.setAttribute("data-intro","play")}}catch(e){}' +
+              'try{var l=localStorage.getItem("portfolio_layers");if(typeof l==="string"){var v=l.split(" ").filter(function(t){return t==="fcu"||t==="bcu"||t==="silks"||t==="edge"});document.documentElement.setAttribute("data-layers",v.join(" "))}}catch(e){}',
           }}
         />
       </head>

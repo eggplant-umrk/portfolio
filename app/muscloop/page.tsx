@@ -66,7 +66,7 @@ export default function MuscloopDetail() {
           viewport={{ once: true, margin: "-100px" }}
         >
           <h2 className="text-2xl font-bold border-b-2 border-silk pb-4 mb-8 text-silk">
-            Team "CPY" & My Role
+            Team &quot;CPY&quot; &amp; My Role
           </h2>
           <div className="prose prose-lg text-silk-soft font-noto leading-relaxed space-y-6">
             <p>
