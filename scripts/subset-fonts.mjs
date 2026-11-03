@@ -21,7 +21,6 @@ const scanExt = new Set([".tsx", ".ts", ".css", ".md", ".mdx", ".json"]);
 // ウェイトごとの元ファイル（Google Fonts 公式リポジトリ ofl/zenkakugothicnew から取得したもの）
 const weights = [
   { weight: 400, file: "ZenKakuGothicNew-Regular.ttf" },
-  { weight: 500, file: "ZenKakuGothicNew-Medium.ttf" },
   { weight: 700, file: "ZenKakuGothicNew-Bold.ttf" },
 ];
 

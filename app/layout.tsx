@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Chakra_Petch, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-import ProbeCursor from "./components/ProbeCursor"; // 測定プローブ型カーソル（PC のみ）
+import LazyProbe from "./components/LazyProbe"; // 測定プローブ型カーソル（マウスのある端末で、手が空いてから読み込む）
 
 // 見出し・名前（使っているのは 700 のみ）
 const chakraPetch = Chakra_Petch({
@@ -26,7 +26,6 @@ const jetBrainsMono = JetBrains_Mono({
 const zenKakuGothicNew = localFont({
   src: [
     { path: "./fonts/ZenKakuGothicNew-400-subset.woff2", weight: "400", style: "normal" },
-    { path: "./fonts/ZenKakuGothicNew-500-subset.woff2", weight: "500", style: "normal" },
     { path: "./fonts/ZenKakuGothicNew-700-subset.woff2", weight: "700", style: "normal" },
   ],
   display: "swap",
@@ -85,7 +84,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-board-outer text-silk font-sans">
-        <ProbeCursor /> {/* サイト全体にプローブ型カーソルを配置（PC のみ表示） */}
+        <LazyProbe /> {/* サイト全体にプローブ型カーソルを配置（PC のみ。最初の表示が終わってから読み込む） */}
         {children}
       </body>
     </html>

@@ -1,100 +1,14 @@
-"use client";
-
-import { useState, useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import BoardSwitch from "./components/BoardSwitch";
-import LayerPanel from "./components/LayerPanel"; // レイヤー表示の切り替え（1024px 以上）
+import type { CSSProperties, ReactNode } from "react";
+import Header from "./components/Header"; // ナビ（スマホのメニュー開閉を持つ）
+import Opening from "./components/Opening"; // 初回訪問のオープニング
+import NewsList from "./components/NewsList"; // News の「もっと見る」
+import PageEffects from "./components/PageEffects"; // 表示域の監視・パララックス・画面外の停止
+import LazyLayerPanel from "./components/LazyLayerPanel"; // レイヤー表示の切り替え（マウスのある端末で、あとから読み込む）
 
-// ＝＝＝ 固定ナビゲーションヘッダー ＝＝＝
-const navLinks = [
-  { part: "U1", label: "ABOUT", href: "#about" },
-  { part: "U2", label: "NEWS", href: "#news" },
-  { part: "U3", label: "WORKS", href: "#projects" },
-  { part: "J1", label: "CONTACT", href: "#contact" },
-];
-
-const Header = ({ delayBase }: { delayBase: number }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  return (
-    <header
-      className="header-in fixed top-0 left-0 w-full z-40 h-[var(--header-h)] px-6 md:px-12 lg:px-24 flex items-center justify-between md:backdrop-blur-md bg-board/90 md:bg-board/70 border-b border-line"
-      style={{ "--d": `${delayBase}s` } as CSSProperties}
-    >
-      {/* ロゴ風「RU」（銅色の枠）+ リビジョン表記 */}
-      <a href="#" className="flex items-center gap-3 whitespace-nowrap group" aria-label="RIKU UMEZAWA">
-        <span className="flex items-center justify-center w-9 h-9 rounded-[4px] border-2 border-copper font-display font-bold text-sm tracking-tight text-copper-light group-hover:text-copper-hover transition-colors">
-          RU
-        </span>
-        <span className="font-mono text-[12px] tracking-[0.12em] text-silk-label">REV 2026.11</span>
-      </a>
-
-      {/* デスクトップ用ナビ + 基板の色切り替え（lg 以上のみ表示。768〜1023px ではヘッダーに入りきらないためメニュー側） */}
-      <div className="hidden lg:flex items-center gap-6 xl:gap-8">
-      <nav className="flex items-center gap-6 xl:gap-10">
-        {navLinks.map((link) => (
-          <a
-            key={link.href}
-            href={link.href}
-            className="group font-mono text-[13px] tracking-[0.12em] flex items-center gap-2 transition-colors"
-          >
-            <span className="text-silk-label">{link.part}</span>
-            <span className="text-nav group-hover:text-copper-hover transition-colors">{link.label}</span>
-          </a>
-        ))}
-      </nav>
-      <BoardSwitch />
-      </div>
-
-      {/* ハンバーガーボタン（lg未満のみ表示） */}
-      <button
-        onClick={() => setIsMenuOpen((prev) => !prev)}
-        aria-label={isMenuOpen ? "メニューを閉じる" : "メニューを開く"}
-        aria-expanded={isMenuOpen}
-        className="lg:hidden relative z-50 flex flex-col justify-center items-center gap-[5px] w-8 h-8 shrink-0 text-silk"
-      >
-        <span
-          className={`block w-6 h-[2px] bg-current transition-[translate,rotate] duration-300 ease-in-out ${isMenuOpen ? "translate-y-[6px] rotate-45" : ""}`}
-        />
-        <span
-          className={`block w-6 h-[2px] bg-current transition-opacity duration-200 ease-in-out ${isMenuOpen ? "opacity-0" : "opacity-100"}`}
-        />
-        <span
-          className={`block w-6 h-[2px] bg-current transition-[translate,rotate] duration-300 ease-in-out ${isMenuOpen ? "-translate-y-[6px] -rotate-45" : ""}`}
-        />
-      </button>
-
-      {/* モバイル用フルスクリーンメニュー（常時マウントし、opacity / visibility で開閉）。
-          基板の色切り替えは <nav> の外、同じ固定レイヤーの中に置く */}
-      <div
-        aria-hidden={!isMenuOpen}
-        className={`lg:hidden fixed inset-0 z-40 flex flex-col items-center justify-center gap-8 bg-board transition-[opacity,visibility] duration-300 ease-in-out ${
-          isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
-      >
-        <nav className="flex flex-col items-center gap-8">
-        {navLinks.map((link, i) => (
-          <a
-            key={link.href}
-            href={link.href}
-            onClick={() => setIsMenuOpen(false)}
-            tabIndex={isMenuOpen ? 0 : -1}
-            className={`group font-mono text-2xl font-bold tracking-[0.12em] flex items-baseline gap-3 transition-[opacity,translate] duration-[400ms] ease-out ${
-              isMenuOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
-            }`}
-            style={{ transitionDelay: isMenuOpen ? `${0.1 + i * 0.06}s` : "0s" }}
-          >
-            <span className="text-base text-silk-label">{link.part}</span>
-            <span className="text-nav group-hover:text-copper-hover transition-colors">{link.label}</span>
-          </a>
-        ))}
-        </nav>
-        <BoardSwitch variant="menu" />
-      </div>
-    </header>
-  );
-};
+// このページは Server Component。動く部分（メニュー・News の件数・オープニング・演出の監視）だけを
+// 小さな Client Component に分け、本文と装飾はサーバーで HTML にする
 
 // ＝＝＝ 無限マーキー（基板風の表記。CSS keyframes、画面外では停止） ＝＝＝
 const marqueeItems = ["UMZW-29", "REV 2026.11", "FRONT-END", "UI/UX", "REACT NATIVE", "FIGMA", "AIT EEE", "NAGOYA"];
@@ -123,7 +37,8 @@ const Marquee = () => (
   </div>
 );
 
-// ＝＝＝ 表示域に入ったら .is-in を付けるラッパー（Framer Motion の whileInView の代替。見た目は globals.css の .reveal） ＝＝＝
+// ＝＝＝ 表示域に入ったら .is-in が付く要素（見た目は globals.css の .reveal）＝＝＝
+// 監視は app/lib/reveal.ts（rootMargin ごとに 1 つの IntersectionObserver）。ここは印だけを付けるサーバー側の部品
 const Reveal = ({
   children,
   className = "",
@@ -136,39 +51,15 @@ const Reveal = ({
   variant?: "up" | "fade" | "sm" | "mask";
   delay?: number;
   margin?: string;
-}) => {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (!("IntersectionObserver" in window)) {
-      el.classList.add("is-in");
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          el.classList.add("is-in");
-          io.disconnect();
-        }
-      },
-      { rootMargin: `${margin} 0px` }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [margin]);
-
-  return (
-    <div
-      ref={ref}
-      className={`reveal reveal-${variant} ${className}`}
-      style={delay ? { transitionDelay: `${delay}s` } : undefined}
-    >
-      {children}
-    </div>
-  );
-};
+}) => (
+  <div
+    className={`reveal reveal-${variant} ${className}`}
+    data-reveal-margin={margin}
+    style={delay ? { transitionDelay: `${delay}s` } : undefined}
+  >
+    {children}
+  </div>
+);
 
 // ＝＝＝ 部品番号付きセクション見出し（マスクリビール） ＝＝＝
 // part: 基板上の部品番号（U1 / U2 / U3 / J1）、index: 連番（01〜04）、tag: 見出し右端の小さな注記
@@ -608,86 +499,9 @@ const newsData = [
 ];
 
 export default function Home() {
-  // Activity & News: 初期 5 件、「もっと見る」で 5 件ずつ追加、全件表示後は「閉じる」で 5 件に戻す
-  const NEWS_STEP = 5;
-  const [visibleNews, setVisibleNews] = useState(NEWS_STEP);
-  // 👇 オープニングのスライドが終わったらオーバーレイを DOM から消すためのステート
-  const [isOpeningDone, setIsOpeningDone] = useState(false);
-
-  const watermarkRef = useRef<HTMLDivElement>(null);
-
-  // 初回訪問の判定は layout.tsx の <head> のインラインスクリプトが描画前に行い、初回なら <html data-intro="play"> が付く
-  // （オープニングの表示は CSS 側で html[data-intro="play"] のときだけ）。ここでは訪問済みフラグの書き込みだけを
-  // 従来どおりマウント時に行う
-  useEffect(() => {
-    try {
-      if (document.documentElement.dataset.intro === "play") {
-        sessionStorage.setItem("portfolio_visited", "true");
-      }
-    } catch {
-      // sessionStorage が使えない環境では何もしない
-    }
-  }, []);
-
-  // 透かし文字のパララックス（scroll を rAF でまとめて translateY だけ動かす）
-  useEffect(() => {
-    const el = watermarkRef.current;
-    if (!el) return;
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      el.style.transform = `translateY(${Math.min(window.scrollY, 1000) * 0.25}px)`;
-    };
-    const onScroll = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    update();
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
-
-  // 常時動くアニメーション（data-pause-offscreen を付けた箱の中）は、画面外とタブ非表示のとき止める
-  useEffect(() => {
-    const targets = Array.from(document.querySelectorAll<HTMLElement>("[data-pause-offscreen]"));
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) e.target.classList.toggle("is-paused", !e.isIntersecting);
-    });
-    targets.forEach((t) => io.observe(t));
-    const onVisibility = () => document.documentElement.classList.toggle("is-hidden", document.hidden);
-    document.addEventListener("visibilitychange", onVisibility);
-    onVisibility();
-    return () => {
-      io.disconnect();
-      document.removeEventListener("visibilitychange", onVisibility);
-    };
-  }, []);
-
-  const allNewsShown = visibleNews >= newsData.length;
-  const displayNews = newsData.slice(0, visibleNews);
-  const handleNewsButton = () => {
-    if (!allNewsShown) {
-      setVisibleNews((n) => Math.min(n + NEWS_STEP, newsData.length));
-      return;
-    }
-    setVisibleNews(NEWS_STEP);
-    // 閉じたとき、News の見出しが画面外（ヘッダーの下に隠れている場合を含む）なら見出しまで戻す
-    const section = document.getElementById("news");
-    const heading = section?.querySelector("h3");
-    if (section && heading) {
-      const rect = heading.getBoundingClientRect();
-      const headerH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-h")) || 0;
-      if (rect.top < headerH || rect.bottom > window.innerHeight) {
-        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        section.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-      }
-    }
-  };
-
   return (
     <div className="pcb-board flex flex-col items-center w-full overflow-hidden relative text-silk">
+      <PageEffects />
       {/* ＝＝＝ Edge.Cuts: 基板の外形線（ページの外周から 12px 内側） ＝＝＝ */}
       <span className="board-edge layer-edge" aria-hidden="true" />
 
@@ -702,21 +516,8 @@ export default function Home() {
       {/* ＝＝＝ ナビゲーションヘッダー ＝＝＝ */}
       <Header delayBase={0.2} />
 
-      {/* ＝＝＝ オープニングアニメーション ＝＝＝ */}
-      {/* 常に描画しておき、CSS で html[data-intro="play"]（初回訪問）のときだけ表示する。
-          Hero の起動演出はこれの終了を待たず同時に進む。スライドし終わったら DOM から消す */}
-      {!isOpeningDone && (
-        <div
-          className="opening fixed inset-0 z-[95] flex items-center justify-center bg-board-outer"
-          onAnimationEnd={(e) => {
-            if (e.animationName === "opening-slide") setIsOpeningDone(true); // 👇 スライドし終わったら完了フラグを立てる
-          }}
-        >
-          <p className="opening-text text-silk text-lg md:text-2xl font-medium tracking-[0.2em] font-sans">
-            Welcome to my portfolio.
-          </p>
-        </div>
-      )}
+      {/* ＝＝＝ オープニングアニメーション（初回訪問のみ。components/Opening.tsx） ＝＝＝ */}
+      <Opening />
 
       {/* ＝＝＝ ヒーローセクション ＝＝＝ */}
       {/* PC は左に文字（最大 640px）・右に回路（最大 540px）の2列、スマホは文字→回路の縦並び。
@@ -732,7 +533,7 @@ export default function Home() {
 
         {/* 演出2：背景の巨大透かし文字（scroll に合わせて translateY、表示は CSS animation） */}
         <div
-          ref={watermarkRef}
+          data-watermark
           className="watermark-in absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center pointer-events-none z-0"
         >
           <p className="font-display text-[15vw] md:text-[12vw] font-bold text-silk/5 select-none tracking-tighter">
@@ -948,38 +749,8 @@ export default function Home() {
           <SpineBranch cls="spine-part--r1" refName="R1" value="10k" print="103" net="RST" left={8.5} width={18} top={-33} pinTop={3} pinBottom={31} />
           <SectionTitle part="U2" index="02" title="Activity & News" tag="TEST LOG" fid />
 
-          {/* 「日付 | 本文」の2列グリッド（スマホは縦積み） */}
-          <div id="news-list" className="max-w-3xl flex flex-col border-t-[1.5px] border-line-strong">
-            {displayNews.map((item, index) => (
-              <Reveal
-                key={index}
-                variant="sm"
-                delay={(index % NEWS_STEP) * 0.05}
-                className="group grid grid-cols-1 sm:grid-cols-[150px_1fr] gap-1 sm:gap-4 items-baseline py-5 border-b border-dotted border-line-dashed cursor-default"
-              >
-                <span className="font-mono text-[14px] text-silk-muted group-hover:text-led-text transition-colors duration-[250ms]">
-                  {item.date}
-                </span>
-                <span className="text-[17px] font-medium text-silk group-hover:translate-x-[6px] transition-transform duration-[250ms]">
-                  {item.text}
-                </span>
-              </Reveal>
-            ))}
-          </div>
-
-          {newsData.length > NEWS_STEP && (
-            <Reveal variant="fade" margin="0px" className="mt-8">
-              <button
-                type="button"
-                onClick={handleNewsButton}
-                aria-expanded={allNewsShown}
-                aria-controls="news-list"
-                className="inline-flex items-center justify-center min-h-[44px] px-6 border-[1.5px] border-copper bg-transparent text-copper-light font-mono text-[13px] tracking-[0.1em] rounded-[4px] hover:bg-copper hover:text-board transition-colors duration-300"
-              >
-                {allNewsShown ? "↑ 閉じる" : "↓ もっと見る"}
-              </button>
-            </Reveal>
-          )}
+          {/* 一覧と「もっと見る」（表示件数の状態だけクライアント側。components/NewsList.tsx） */}
+          <NewsList items={newsData} />
         </div>
       </section>
 
@@ -1073,8 +844,8 @@ export default function Home() {
         </div>
       </div>
       {/* ＝＝＝ /基板スパイン ＝＝＝ */}
-      {/* ＝＝＝ レイヤー表示の切り替え（左下に固定、1024px 以上のみ） ＝＝＝ */}
-      <LayerPanel />
+      {/* ＝＝＝ レイヤー表示の切り替え（左下に固定、1024px 以上のみ。マウスのある端末で、手が空いてから読み込む） ＝＝＝ */}
+      <LazyLayerPanel />
     </div>
   );
 }

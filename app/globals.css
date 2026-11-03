@@ -177,24 +177,28 @@ body {
   background: var(--trace);
 }
 /* 線の中を電流が下方向へ流れる演出。発光は filter ではなく、同じ模様を幅広・半透明で重ねた ::before */
+/* 模様（周期 140px）を上に 140px 余分に描いておき、transform で 140px 下へ動かし続ける（background-position だと
+   毎フレーム再描画になるが、transform ならコンポジタだけで動く）。はみ出しは clip-path で線の上下端に切りそろえる */
+.pcb-spine { clip-path: inset(0 -4px); }
 .pcb-spine::before,
 .pcb-spine::after {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -140px 0 0;
   border-radius: 2px;
   background: repeating-linear-gradient(180deg, transparent 0 60px, var(--led-glow) 60px 74px, transparent 74px 140px);
   background-size: 100% 140px;
   animation: pcb-current 3.2s linear infinite;
+  will-change: transform;
 }
 .pcb-spine::before {
-  inset: 0 -3px;
+  inset: -140px -3px 0;
   border-radius: 4px;
   opacity: 0.3;
 }
 @keyframes pcb-current {
-  from { background-position: 0 0; }
-  to   { background-position: 0 140px; }
+  from { transform: translateY(0); }
+  to   { transform: translateY(140px); }
 }
 
 /* ＝＝＝ セクション見出しのパッド（スパインの真上に乗る円 + 右へ伸びる短い線）＝＝＝ */
@@ -386,32 +390,6 @@ body {
 @keyframes ledon { to { fill: var(--led); } }
 @keyframes glowon { to { opacity: 1; transform: scale(1); } }
 
-/* 動きを減らす設定のときはアニメーションなしで最終状態を出す */
-@media (prefers-reduced-motion: reduce) {
-  .hero-in,
-  .fade-in,
-  .header-in,
-  .watermark-in { animation: none; opacity: 1; transform: none; scale: none; }
-  .hero-circuit .trace { animation: none; stroke-dashoffset: 0; }
-  .hero-circuit .flow { animation: none; opacity: var(--fo, 1); }
-  .hero-circuit .via,
-  .hero-circuit .pad,
-  .hero-circuit .part { animation: none; opacity: 1; }
-  .hero-circuit .chip { animation: none; opacity: 1; transform: none; }
-  .hero-circuit .led { animation: none; fill: var(--led); }
-  .hero-circuit .led-glow { animation: none; opacity: 1; transform: none; }
-  .pcb-spine::before,
-  .pcb-spine::after,
-  .marquee-track,
-  .scroll-hint-bar { animation: none; }
-  .reveal,
-  .reveal-mask > * { opacity: 1; transform: none; transition: none; }
-  .opening { display: none !important; }
-  .theme-switching,
-  .theme-switching *,
-  .theme-switching *::before,
-  .theme-switching *::after { transition: none !important; }
-}
 
 /* ＝＝＝ About: 部品表（BOM）＝＝＝ */
 .bom { border-collapse: collapse; }
@@ -715,6 +693,19 @@ html[data-intro="play"] .opening {
 }
 @keyframes opening-text-out { to { opacity: 0; } }
 
+/* YouTube の軽量埋め込み: サムネイル + 再生ボタン（押すと iframe に切り替わる） */
+.yt-facade { display: block; background: #000; cursor: pointer; }
+.yt-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255, 0, 0, .85);
+  transition: color .2s;
+}
+.yt-facade:hover .yt-play,
+.yt-facade:focus-visible .yt-play { color: #f00; }
+
 /* 表示域に入ったら現れる（Reveal コンポーネント） */
 .reveal {
   opacity: 0;
@@ -723,6 +714,10 @@ html[data-intro="play"] .opening {
 }
 .reveal-fade { transform: none; transition: opacity .6s ease; }
 .reveal-sm { transform: translateY(10px); transition: opacity .4s ease-out, transform .4s ease-out; }
+.reveal-detail { transform: translateY(20px); transition: opacity .6s ease-out, transform .6s ease-out; } /* 詳細ページの各セクション */
+/* 詳細ページのタイトルとメインビジュアル（Framer Motion の initial / animate の置き換え）。読み込み直後に表示域にあるので
+   .reveal の監視ですぐ始まり、終わると transform が外れる（keyframes の forwards だと transform が残って文字の描画が変わる） */
+.reveal-detail-in { transform: translateY(var(--y, 20px)); transition: opacity .8s ease-out, transform .8s ease-out; }
 .reveal.is-in { opacity: 1; transform: none; }
 .reveal-mask { opacity: 1; transform: none; transition: none; overflow: hidden; }
 .reveal-mask > * { transform: translateY(115%); transition: transform .8s cubic-bezier(.22, 1, .36, 1); }
@@ -973,4 +968,34 @@ html[data-intro="play"] .opening {
 }
 @media (prefers-reduced-motion: reduce) {
   .spine-part:hover { transform: none; }
+}
+
+/* ======================================================================
+   動きを減らす設定（prefers-reduced-motion）。通常のルールより後ろに置き、同じ優先度でも必ず勝つようにする
+   （以前はファイル途中にあり、後ろで定義される .marquee-track / .reveal / .scroll-hint-bar には効いていなかった）
+   ====================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .hero-in,
+  .fade-in,
+  .header-in,
+  .watermark-in { animation: none; opacity: 1; transform: none; scale: none; }
+  .hero-circuit .trace { animation: none; stroke-dashoffset: 0; }
+  .hero-circuit .flow { animation: none; opacity: var(--fo, 1); }
+  .hero-circuit .via,
+  .hero-circuit .pad,
+  .hero-circuit .part { animation: none; opacity: 1; }
+  .hero-circuit .chip { animation: none; opacity: 1; transform: none; }
+  .hero-circuit .led { animation: none; fill: var(--led); }
+  .hero-circuit .led-glow { animation: none; opacity: 1; transform: none; }
+  .pcb-spine::before,
+  .pcb-spine::after,
+  .marquee-track,
+  .scroll-hint-bar { animation: none; }
+  .reveal,
+  .reveal-mask > * { opacity: 1; transform: none; transition: none; }
+  .opening { display: none !important; }
+  .theme-switching,
+  .theme-switching *,
+  .theme-switching *::before,
+  .theme-switching *::after { transition: none !important; }
 }
