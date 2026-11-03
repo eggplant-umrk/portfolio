@@ -134,9 +134,9 @@ export default function TraildropDetail() {
           <div className="w-full rounded-3xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1A1A1A] aspect-video relative transition-colors duration-500">
             <iframe
               className="absolute inset-0 w-full h-full"
-              src="https://www.youtube.com/embed/GyfnruzfmHI"
+              src="https://www.youtube-nocookie.com/embed/GyfnruzfmHI"
               title="TrailDrop Demo"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allow="encrypted-media; picture-in-picture"
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
             />

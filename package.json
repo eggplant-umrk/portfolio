@@ -3,14 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/subset-fonts.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/subset-fonts.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "subset-fonts": "node scripts/subset-fonts.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.40.0",
-    "next": "16.2.7",
+    "next": "16.4.4",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -20,7 +23,9 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.7",
+    "eslint-config-next": "16.4.4",
+    "fontkit": "^2.0.4",
+    "subset-font": "^2.9.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

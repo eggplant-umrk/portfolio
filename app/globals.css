@@ -4,27 +4,129 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --accent: #2563eb; /* エレクトリックブルー（サイト唯一の差し色） */
+  --accent: #2563eb; /* ライト表示時のみ使う旧アクセント（ダークでは LED 色に置き換わる） */
+  --pad-fill: #ffffff; /* セクション見出しのパッド内側 */
+
+  /* ＝＝＝ 基板（PCB）パレット ＝＝＝ */
+  --board: #0D2E22;        /* 基板の地 */
+  --board-outer: #0B261C;  /* ページ背景の外側 */
+  --copper: #D19A5B;       /* 銅（配線・枠線） */
+  --copper-dark: #8A6238;  /* 暗い銅 */
+  --copper-light: #F2C48D; /* 明るい銅（文字用） */
+  --led: #FF6A3D;          /* LED（差し色） */
+  --led-glow: #FF8A50;     /* 発光部分 */
+  --silk: #ECEEE4;         /* シルク文字（本文） */
+  --silk-soft: #DDE3DA;    /* 本文やや弱め */
+  --silk-muted: #9FB3A7;   /* 補助文字 */
+  --silk-label: #7FA08F;   /* ラベル */
+  --line: #23503E;         /* 区切り線（実線） */
+  --line-dashed: #2C5544;  /* 区切り線（点線） */
+  --trace: #5E4428;        /* スパイン（左を流れる配線） */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
-  --font-sans: var(--font-inter), var(--font-noto-sans-jp), system-ui, sans-serif;
-  --font-noto: var(--font-noto-sans-jp), sans-serif;
+
+  --color-board: var(--board);
+  --color-board-outer: var(--board-outer);
+  --color-copper: var(--copper);
+  --color-copper-dark: var(--copper-dark);
+  --color-copper-light: var(--copper-light);
+  --color-led: var(--led);
+  --color-led-glow: var(--led-glow);
+  --color-silk: var(--silk);
+  --color-silk-soft: var(--silk-soft);
+  --color-silk-muted: var(--silk-muted);
+  --color-silk-label: var(--silk-label);
+  --color-line: var(--line);
+  --color-line-dashed: var(--line-dashed);
+
+  /* 本文（日本語）: Zen Kaku Gothic New / 見出し・名前: Chakra Petch / ラベル・日付・ナビ: JetBrains Mono */
+  --font-sans: var(--font-zen-kaku), system-ui, sans-serif;
+  --font-noto: var(--font-zen-kaku), sans-serif;
+  --font-display: var(--font-chakra), var(--font-zen-kaku), sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
 }
 
 /* ② @media (prefers-color-scheme: dark) を .dark クラスに書き換え */
 .dark {
-  --background: #1a1a1a;
-  --foreground: #fafafa;
-  --accent: #3b82f6; /* ダーク背景では少し明るめの青に */
+  --background: var(--board-outer);
+  --foreground: var(--silk);
+  --accent: var(--led); /* 既存の差し色はすべて LED 色に */
+  --pad-fill: var(--board);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* ＝＝＝ 基板の地 + 点のグリッド（ページのルート要素に敷く。ダーク表示時のみ） ＝＝＝ */
+.dark .pcb-board {
+  background-color: var(--board);
+  background-image: radial-gradient(rgba(236, 238, 228, 0.07) 1px, transparent 1.4px);
+  background-size: 24px 24px;
+}
+
+/* ＝＝＝ スパイン（About〜Contact の左を縦に通る配線）＝＝＝ */
+.pcb-spine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--trace);
+}
+/* 線の中を電流が下方向へ流れる演出。発光は filter ではなく、同じ模様を幅広・半透明で重ねた ::before */
+.pcb-spine::before,
+.pcb-spine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background: repeating-linear-gradient(180deg, transparent 0 60px, #FF7A45 60px 74px, transparent 74px 140px);
+  background-size: 100% 140px;
+  animation: pcb-current 3.2s linear infinite;
+}
+.pcb-spine::before {
+  inset: 0 -3px;
+  border-radius: 4px;
+  opacity: 0.3;
+}
+@keyframes pcb-current {
+  from { background-position: 0 0; }
+  to   { background-position: 0 140px; }
+}
+
+/* ＝＝＝ セクション見出しのパッド（スパインの真上に乗る円 + 右へ伸びる短い線）＝＝＝ */
+/* 見出しの本文は配線から 52px（PC 112px）内側にあり、スパインは 22px（PC 56px）の位置。
+   円の中心をスパインに合わせるため left = -(余白 - スパイン位置) - 半径 */
+.pcb-pad {
+  position: absolute;
+  top: 50%;
+  left: -39px; /* -(52 - 22) - 9 */
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  border: 3px solid var(--copper);
+  background: var(--pad-fill);
+  transform: translateY(-50%);
+}
+.pcb-pad::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 3px);
+  width: 20px;
+  height: 3px;
+  background: var(--copper-dark);
+  transform: translateY(-50%);
+}
+@media (min-width: 768px) {
+  .pcb-pad { left: -65px; } /* -(112 - 56) - 9 */
+  .pcb-pad::after { width: 44px; }
 }
 
 /* テキスト選択時もアクセント色で統一 */
@@ -33,7 +135,7 @@ body {
   color: #ffffff;
 }
 
-/* スクロールバーも白黒の世界観に合わせる */
+/* スクロールバーも世界観に合わせる */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -66,3 +168,352 @@ body {
     radial-gradient(45% 35% at 85% 10%, rgba(255, 255, 255, 0.06), transparent 70%),
     radial-gradient(40% 30% at 10% 90%, rgba(255, 255, 255, 0.06), transparent 70%);
 }
+
+/* ======================================================================
+   2本目: 各セクションの中身を「電子回路」の見た目にするための部品スタイル
+   ====================================================================== */
+
+/* ＝＝＝ Hero 左列の起動演出（ページ表示と同時に始まる。--d は要素ごとの遅延） ＝＝＝ */
+.hero-in {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: hero-in 0.6s ease-out forwards;
+  animation-delay: var(--d, 0s);
+}
+@keyframes hero-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 実績リスト: 各行の頭に配線（14×3px 銅）と LED（直径 8px） */
+.hero-ach li {
+  position: relative;
+  padding-left: 30px;
+}
+.hero-ach li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: calc(0.8125em - 1.5px);
+  width: 14px;
+  height: 3px;
+  background: #D19A5B;
+}
+.hero-ach li::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: calc(0.8125em - 4px);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #FF6A3D;
+  box-shadow: 0 0 8px #FF6A3D;
+}
+
+/* ＝＝＝ Hero 右列の回路 SVG（配線が描かれ、チップが載り、LED が点く） ＝＝＝ */
+.hero-circuit .trace {
+  fill: none;
+  stroke: #B9824A;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1400;
+  stroke-dashoffset: 1400;
+  animation: draw 1.6s cubic-bezier(.6, .1, .3, 1) forwards;
+  animation-delay: .1s;
+}
+.hero-circuit .t2 { animation-delay: .3s; }
+.hero-circuit .t3 { animation-delay: .5s; }
+.hero-circuit .t4 { animation-delay: .7s; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+.hero-circuit .flow {
+  fill: none;
+  stroke: #FF8A50;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 8 46;
+  opacity: 0;
+  animation: fadein .4s 1.5s forwards, dash 1.6s 1.5s linear infinite;
+}
+/* 電流の発光: 同じ経路に太め・低不透明度の線を重ねる */
+.hero-circuit .flow-glow {
+  stroke-width: 8;
+  --fo: 0.25;
+}
+@keyframes dash { to { stroke-dashoffset: -54; } }
+@keyframes fadein { to { opacity: var(--fo, 1); } }
+
+.hero-circuit .via {
+  fill: #0D2E22;
+  stroke: #D19A5B;
+  stroke-width: 3;
+  opacity: 0;
+  animation: fadein .3s .8s forwards;
+}
+.hero-circuit .chip {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: chipin .6s .6s cubic-bezier(.2, .9, .3, 1.2) forwards;
+}
+@keyframes chipin {
+  from { opacity: 0; transform: scale(.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.hero-circuit .led {
+  fill: #3A1810;
+  animation: ledon .5s forwards;
+}
+.hero-circuit .led-glow {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: scale(.6);
+  animation: glowon .5s ease-out forwards;
+}
+.hero-circuit .l1 { animation-delay: 1.1s; }
+.hero-circuit .l2 { animation-delay: 1.3s; }
+@keyframes ledon { to { fill: #FF6A3D; } }
+@keyframes glowon { to { opacity: 1; transform: scale(1); } }
+
+/* 動きを減らす設定のときはアニメーションなしで最終状態を出す */
+@media (prefers-reduced-motion: reduce) {
+  .hero-in,
+  .fade-in,
+  .header-in,
+  .watermark-in { animation: none; opacity: 1; transform: none; scale: none; }
+  .hero-circuit .trace { animation: none; stroke-dashoffset: 0; }
+  .hero-circuit .flow { animation: none; opacity: var(--fo, 1); }
+  .hero-circuit .via { animation: none; opacity: 1; }
+  .hero-circuit .chip { animation: none; opacity: 1; transform: none; }
+  .hero-circuit .led { animation: none; fill: #FF6A3D; }
+  .hero-circuit .led-glow { animation: none; opacity: 1; transform: none; }
+  .pcb-spine::before,
+  .pcb-spine::after,
+  .marquee-track,
+  .scroll-hint-bar { animation: none; }
+  .reveal,
+  .reveal-mask > * { opacity: 1; transform: none; transition: none; }
+  .opening { display: none !important; }
+}
+
+/* ＝＝＝ About: 部品表（BOM）＝＝＝ */
+.bom { border-collapse: collapse; }
+.bom th {
+  text-align: left;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--silk-label);
+  padding: 0 12px 10px 8px;
+  border-bottom: 1.5px solid #3E6B57;
+}
+.bom td {
+  padding: 10px 12px 10px 8px;
+  border-bottom: 1px dotted #2C5544;
+  color: var(--silk-soft);
+  transition: color .2s, background-color .2s;
+}
+.bom td:first-child { color: var(--silk-label); width: 64px; }
+.bom tbody tr:hover td { background: rgba(209, 154, 91, .08); color: #FFD08F; }
+
+/* ＝＝＝ Selected Works: IC チップ型カード ＝＝＝ */
+.work-card { transition: transform .35s ease; }
+.work-card:hover { transform: translateY(-6px); }
+/* チップ本体の左右に端子（10px 幅、上下 24px 内側） */
+.chip-body::before,
+.chip-body::after {
+  content: "";
+  position: absolute;
+  top: 24px;
+  bottom: 24px;
+  width: 10px;
+  background: repeating-linear-gradient(180deg, #9A9C9A 0 10px, transparent 10px 22px);
+  transition: filter .35s;
+}
+.chip-body::before { left: -10px; }
+.chip-body::after { right: -10px; }
+.work-card:hover .chip-body::before,
+.work-card:hover .chip-body::after {
+  background: repeating-linear-gradient(180deg, #FFC27A 0 10px, transparent 10px 22px);
+  filter: drop-shadow(0 0 4px #FF8A50);
+}
+/* 上辺中央の切り欠き（下側が半円） */
+.chip-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 18px;
+  background: var(--board);
+  border-radius: 0 0 18px 18px;
+}
+/* 1番ピンの印 */
+.chip-pin1 {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #2C302D;
+  transition: background-color .35s, box-shadow .35s;
+}
+.work-card:hover .chip-pin1 { background: #FF6A3D; box-shadow: 0 0 8px #FF6A3D; }
+.work-card:hover .chip-link { color: #FFD08F; }
+
+/* ＝＝＝ Get in Touch: コネクタのピン ＝＝＝ */
+.pin-pad {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  background: #D19A5B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow .25s;
+}
+.pin-pad::after {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--board);
+}
+.pin:hover .pin-pad { box-shadow: 0 0 0 4px rgba(255, 138, 80, .35), 0 0 24px #FF8A50; }
+.pin:hover .pin-label { color: #FFD08F; }
+
+/* ＝＝＝ 測定プローブ型カーソル（PC のみ） ＝＝＝ */
+.probe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .2s;
+  will-change: transform;
+}
+.probe-h { position: absolute; left: -16px; top: 0; width: 32px; height: 1px; background: #FF8A50; }
+.probe-v { position: absolute; top: -16px; left: 0; width: 1px; height: 32px; background: #FF8A50; }
+.probe-dot {
+  position: absolute;
+  left: -5px;
+  top: -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid #FF8A50;
+}
+.probe-readout {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  padding: 4px 8px;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--silk-muted);
+  background: rgba(7, 26, 19, .92);
+  border: 1px solid #3E6B57;
+}
+@media (hover: none) {
+  .probe { display: none; }
+}
+
+/* ======================================================================
+   軽量化: Framer Motion を置き換えた CSS アニメーションと、画面外・非表示時の停止
+   ====================================================================== */
+
+/* 常時動くアニメーションの停止（IntersectionObserver で .is-paused、タブ非表示で html.is-hidden） */
+.is-paused,
+.is-paused *,
+.is-paused .pcb-spine::before,
+.is-paused .pcb-spine::after,
+html.is-hidden [data-pause-offscreen],
+html.is-hidden [data-pause-offscreen] *,
+html.is-hidden [data-pause-offscreen] .pcb-spine::before,
+html.is-hidden [data-pause-offscreen] .pcb-spine::after {
+  animation-play-state: paused !important;
+}
+
+/* Hero 背景の光（PC）: blur フィルタの代わりの静的グラデーション */
+.hero-glow-desktop {
+  background-image:
+    radial-gradient(28vw 28vw at 92% 2%, rgba(209, 154, 91, 0.07), transparent 70%),
+    radial-gradient(22vw 22vw at 8% 98%, rgba(209, 154, 91, 0.07), transparent 70%);
+}
+
+/* ヘッダーの登場（transform だと fixed の子メニューの基準になるため top を動かす） */
+.header-in {
+  opacity: 0;
+  animation: header-in .8s ease-out forwards;
+  animation-delay: var(--d, 0s);
+}
+@keyframes header-in {
+  from { opacity: 0; top: -16px; }
+  to   { opacity: 1; top: 0; }
+}
+
+/* 単純なフェードイン（--d で遅延） */
+.fade-in {
+  opacity: 0;
+  animation: fade-in 1s ease forwards;
+  animation-delay: var(--d, 0s);
+}
+@keyframes fade-in { to { opacity: 1; } }
+
+/* 透かし文字の登場（translate は Tailwind の translate プロパティ、パララックスは inline の transform） */
+.watermark-in {
+  opacity: 0;
+  scale: .95;
+  animation: watermark-in 1.5s ease-out forwards;
+}
+@keyframes watermark-in { to { opacity: 1; scale: 1; } }
+
+/* スクロール案内の縦バー */
+.scroll-hint-bar { animation: scroll-hint 1.5s ease-in-out infinite; }
+@keyframes scroll-hint {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(200%); }
+}
+
+/* マーキー帯 */
+.marquee-track { animation: marquee 28s linear infinite; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* オープニング（初回訪問のみ）。常に DOM にあり、<html data-intro="play"> のときだけ表示する。
+   0.4s で消え始め 0.9s で完全に消える（終端で visibility: hidden にして操作も通さない）。
+   Hero の起動演出はこれを待たず、同時に進む */
+.opening { display: none; }
+html[data-intro="play"] .opening {
+  display: flex;
+  animation: opening-slide .5s cubic-bezier(.76, 0, .24, 1) .4s forwards;
+}
+@keyframes opening-slide { to { transform: translateY(-100vh); visibility: hidden; } }
+.opening-text {
+  opacity: 0;
+  animation: opening-text-in .2s ease-out 0s forwards, opening-text-out .15s ease .3s forwards;
+}
+@keyframes opening-text-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes opening-text-out { to { opacity: 0; } }
+
+/* 表示域に入ったら現れる（Reveal コンポーネント） */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity .8s ease-out, transform .8s ease-out;
+}
+.reveal-fade { transform: none; transition: opacity .6s ease; }
+.reveal-sm { transform: translateY(10px); transition: opacity .4s ease-out, transform .4s ease-out; }
+.reveal.is-in { opacity: 1; transform: none; }
+.reveal-mask { opacity: 1; transform: none; transition: none; overflow: hidden; }
+.reveal-mask > * { transform: translateY(115%); transition: transform .8s cubic-bezier(.22, 1, .36, 1); }
+.reveal-mask.is-in > * { transform: none; }
