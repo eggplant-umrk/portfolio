@@ -505,12 +505,14 @@ export default function Home() {
       {/* ＝＝＝ Edge.Cuts: 基板の外形線（ページの外周から 12px 内側） ＝＝＝ */}
       <span className="board-edge layer-edge" aria-hidden="true" />
 
-      {/* ＝＝＝ 取り付け穴 H1・H2（ヘッダーの下端から 24px 下、左右の端から 28px。767px 以下では非表示） ＝＝＝ */}
-      <span className="mount-hole left-7 top-[calc(var(--header-h)+24px)]" aria-hidden="true">
-        <span className="mount-hole-label layer-silks left-[calc(100%+18px)]">H1</span>
+      {/* ＝＝＝ 取り付け穴 H1・H2（767px 以下では非表示） ＝＝＝ */}
+      {/* 中心は外形線の角（端から 12px、上辺はヘッダーの下端 + 12px）から縦横 46px 内側 = 端から 58px。
+          点線の円（直径 46px）と外形線のすき間は 23px。ラベルは穴の下（横だと 1440px で Hero の 1 行目と重なる） */}
+      <span className="mount-hole left-[43px] top-[calc(var(--header-h)+43px)]" aria-hidden="true">
+        <span className="mount-hole-label mount-hole-label--below layer-silks">H1</span>
       </span>
-      <span className="mount-hole right-7 top-[calc(var(--header-h)+24px)]" aria-hidden="true">
-        <span className="mount-hole-label layer-silks right-[calc(100%+18px)]">H2</span>
+      <span className="mount-hole right-[43px] top-[calc(var(--header-h)+43px)]" aria-hidden="true">
+        <span className="mount-hole-label mount-hole-label--below layer-silks">H2</span>
       </span>
 
       {/* ＝＝＝ ナビゲーションヘッダー ＝＝＝ */}
@@ -774,12 +776,14 @@ export default function Home() {
 
       {/* ＝＝＝ フッター（コンタクトセクション） ＝＝＝ */}
       <footer id="contact" className="relative w-full px-8 md:px-24 pt-32 pb-12 border-t border-line scroll-mt-[var(--header-h)]">
-        {/* ＝＝＝ 取り付け穴 H3・H4（フッターの上端から 24px 上、左右の端から 28px） ＝＝＝ */}
-        <span className="mount-hole left-7 -top-[54px]" aria-hidden="true">
-          <span className="mount-hole-label layer-silks left-[calc(100%+18px)]">H3</span>
+        {/* ＝＝＝ 取り付け穴 H3・H4（中心は左右の端から 58px、ページの下端から 100px）。
+            下端から 58px だと左下に固定の LAYERS ボタン（下 24px・高さ 44px）に点線の円がかかるので、円の下端が
+            ボタンの上端から 9px 離れる高さにする。ラベルは穴の上（横だと 1440px で H4 が「BACK TO TOP ↑」と重なる） ＝＝＝ */}
+        <span className="mount-hole left-[43px] bottom-[85px]" aria-hidden="true">
+          <span className="mount-hole-label mount-hole-label--above layer-silks">H3</span>
         </span>
-        <span className="mount-hole right-7 -top-[54px]" aria-hidden="true">
-          <span className="mount-hole-label layer-silks right-[calc(100%+18px)]">H4</span>
+        <span className="mount-hole right-[43px] bottom-[85px]" aria-hidden="true">
+          <span className="mount-hole-label mount-hole-label--above layer-silks">H4</span>
         </span>
         <div className="relative max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
           {/* Works と Contact の間の抵抗 R2（+3V3 → R2 → SDA。リード線の先はスルーホールのランド） */}

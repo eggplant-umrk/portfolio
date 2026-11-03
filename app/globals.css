@@ -648,10 +648,11 @@ html[data-layers~="bcu"] .layer-bcu { visibility: visible; }
 @media (hover: none) {
   .layer-panel { display: none; }
 }
-/* Edge.Cuts: ページの外周から 12px 内側に角丸の細い線 */
+/* Edge.Cuts: ページの外周から 12px 内側に角丸の細い線。上辺だけは固定ヘッダーに隠れないよう、ヘッダーの下端から 12px 下 */
 .board-edge {
   position: absolute;
   inset: 12px;
+  top: calc(var(--header-h) + 12px);
   border: 1px solid var(--edge);
   border-radius: 18px;
   pointer-events: none;
@@ -821,6 +822,21 @@ html[data-intro="play"] .opening {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
+}
+/* 穴の下に置くラベル（H1・H2）: 中央ぞろえ、点線の円（穴の外 14px）の 6px 下 */
+.mount-hole-label--below {
+  top: calc(100% + 20px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+/* 穴の上に置くラベル（H3・H4）: 中央ぞろえ、点線の円の 6px 上 */
+.mount-hole-label--above {
+  top: auto;
+  bottom: calc(100% + 20px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+.mount-hole-label {
   font-family: var(--font-jetbrains), ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 0.1em;
