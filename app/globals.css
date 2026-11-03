@@ -169,7 +169,7 @@ body {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 3px;
+  width: 4px; /* +3V3 の電源ライン（信号 3px より太い）。中心は 23.5px / 57.5px のまま */
   border-radius: 2px;
   background: var(--trace);
 }
@@ -311,6 +311,7 @@ body {
   animation: draw 1.6s cubic-bezier(.6, .1, .3, 1) forwards;
   animation-delay: .1s;
 }
+.hero-circuit .pwr { stroke-width: 5; } /* 電源（+3V3・GND）は信号より太く */
 .hero-circuit .t2 { animation-delay: .3s; }
 .hero-circuit .t3 { animation-delay: .5s; }
 .hero-circuit .t4 { animation-delay: .7s; }
@@ -339,6 +340,22 @@ body {
   stroke-width: 3;
   opacity: 0;
   animation: fadein .3s .8s forwards;
+}
+/* 銅のパッド（IC のピンの下・LED の端子）はビアと同時に、部品はその直後に現れる */
+.hero-circuit .pad {
+  fill: var(--copper);
+  opacity: 0;
+  animation: fadein .3s .8s forwards;
+}
+.hero-circuit .part {
+  opacity: 0;
+  animation: fadein .3s .9s forwards;
+}
+/* LED の外形線（シルク）。平らな辺がカソード側 */
+.hero-circuit .silk {
+  fill: none;
+  stroke: var(--silk-muted);
+  stroke-width: 1.5;
 }
 .hero-circuit .chip {
   opacity: 0;
@@ -374,7 +391,9 @@ body {
   .watermark-in { animation: none; opacity: 1; transform: none; scale: none; }
   .hero-circuit .trace { animation: none; stroke-dashoffset: 0; }
   .hero-circuit .flow { animation: none; opacity: var(--fo, 1); }
-  .hero-circuit .via { animation: none; opacity: 1; }
+  .hero-circuit .via,
+  .hero-circuit .pad,
+  .hero-circuit .part { animation: none; opacity: 1; }
   .hero-circuit .chip { animation: none; opacity: 1; transform: none; }
   .hero-circuit .led { animation: none; fill: var(--led); }
   .hero-circuit .led-glow { animation: none; opacity: 1; transform: none; }
@@ -478,6 +497,7 @@ body {
   border-radius: 50%;
   background: var(--board);
 }
+.pin-pad--round { border-radius: 50%; } /* 2・3 番ピン: 丸いパッド（スルーホール） */
 .pin:hover .pin-pad { box-shadow: 0 0 0 4px color-mix(in srgb, var(--led-glow) 35%, transparent), 0 0 24px var(--led-glow); }
 .pin:hover .pin-label { color: var(--copper-hover); }
 
@@ -679,8 +699,46 @@ html[data-intro="play"] .opening {
   pointer-events: auto; /* 部品だけはホバーさせる */
   transition: transform .25s ease, box-shadow .25s ease;
 }
-.spine-part--r { background: linear-gradient(180deg, #B9B9B4 0 7px, #1E1F1C 7px 23px, #B9B9B4 23px 30px); }
 .spine-part--c { background: linear-gradient(180deg, #B9B9B4 0 7px, #C8A06A 7px 23px, #B9B9B4 23px 30px); }
+/* R1: チップ抵抗（18×34、上下 6px が端子）。本体に「103」を印字（10k の 3 桁表記）。中心 = 22/56 + 1.5 - 9 */
+.spine-part--r1 {
+  width: 18px;
+  height: 34px;
+  background: linear-gradient(180deg, #B9B9B4 0 6px, #1E1F1C 6px 28px, #B9B9B4 28px 34px);
+}
+.spine-part-print {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(90deg);
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  color: #E8E8E2;
+  pointer-events: none;
+}
+/* R2: リード線付き抵抗。本体 16×36 のカプセル形にカラーコード（黄・紫・赤 = 47×10^2、離して金 = ±5%）。
+   リード線（2×10）は ::before / ::after で上下に伸ばす。中心 = 22/56 + 1.5 - 8 */
+.spine-part--r2 {
+  width: 16px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(180deg,
+    #D9C4A0 0 7px, #E8C21A 7px 10px, #D9C4A0 10px 12px, #7B3FA0 12px 15px, #D9C4A0 15px 17px,
+    #C8302A 17px 20px, #D9C4A0 20px 25px, #B8962E 25px 28px, #D9C4A0 28px 36px);
+}
+.spine-part--r2::before,
+.spine-part--r2::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  width: 2px;
+  height: 10px;
+  background: #B9B9B4;
+}
+.spine-part--r2::before { bottom: 100%; }
+.spine-part--r2::after { top: 100%; }
 .spine-part:hover {
   box-shadow: 0 0 0 3px rgba(255, 138, 80, .35), 0 0 18px #FF8A50;
   transform: scale(1.15);
@@ -697,9 +755,66 @@ html[data-intro="play"] .opening {
   line-height: 1;
   pointer-events: none;
 }
+.spine-part-label { left: auto; right: calc(100% + 8px); } /* 部品ラベルは部品の左（スパインとの間には置けない） */
 .spine-part-label .ref { color: var(--silk-soft); }
 .spine-part-label .val,
 .spine-tp-label { color: var(--silk-label); }
+/* スパインからの枝分かれ: 部品はスパインの 40px 左に縦置き。上の端子 → 水平配線 → スパイン、下の端子 → 左へ → ビア / ネット名 */
+.spine-branch {
+  position: absolute; /* 幅は部品と同じ（JSX の width）。配線やビアの位置は部品中心 = 50% を基準にする */
+  pointer-events: none;
+}
+.spine-branch > .spine-part { left: 0; top: 0; }
+.spine-wire {
+  position: absolute;
+  height: 3px;
+  width: 40px;
+  background: var(--trace);
+  transform: translateY(-50%);
+}
+.spine-wire--in { left: 50%; }    /* 部品中心 → スパイン中心（40px 右） */
+.spine-wire--out { right: 50%; }  /* 部品中心 → 40px 左 */
+.spine-via {
+  position: absolute;
+  right: calc(50% + 35px); /* 中心が配線の左端 */
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--copper);
+  background: var(--board);
+  transform: translateY(-50%);
+}
+.spine-net {
+  position: absolute;
+  right: calc(50% + 46px);
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1;
+  color: var(--silk-label);
+  white-space: nowrap;
+  transform: translateY(-50%);
+}
+/* 1360px 以上では左余白の背景配線パターンの上に乗るので、文字の周りだけ基板色で抜く */
+.spine-net,
+.spine-branch .spine-part-label {
+  background: var(--board);
+  padding: 2px 3px;
+  border-radius: 2px;
+}
+.spine-net--via { right: calc(50% + 51px); }
+/* R2 のリード線の先のスルーホールのランド（銅のリング + 中央の穴） */
+.spine-land {
+  position: absolute;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2.5px solid var(--copper);
+  background: var(--board);
+  transform: translate(-50%, -50%);
+}
+.spine-land--top { top: -10px; }
+.spine-land--bottom { top: calc(100% + 10px); }
 .spine-tp {
   position: absolute;
   width: 18px;

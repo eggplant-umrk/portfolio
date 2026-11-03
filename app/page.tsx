@@ -222,8 +222,58 @@ const SectionTitle = ({
 // ＝＝＝ Hero 右列: 回路の絵（配線・ビア・IC・LED）。演出は globals.css の .hero-circuit 配下 ＝＝＝
 // LED の発光は filter ではなく radialGradient を塗った大きめの円（.led-glow）、電流の発光は太い半透明の線（.flow-glow）。
 // 発光が切れないよう viewBox を少し広げ（上 20・右 20）、overflow: visible にしている
+//
+// 回路としての整合（U10 = 12 ピン SOIC。左を上から 1〜6、右を下から 7〜12）
+//   1: +3V3（左上のビアへ。すぐそばにパスコン C2 100n → GND ビア）   6: GND（下端へ）
+//   8: SDA / 7: SCL（どちらも下端へ。R3 / R4 4k7 で +3V3 にプルアップ。その +3V3 は裏層経由＝ビアで表す）
+//   12: → R5 330 → D1 → GND ビア   10: → R6 330 → D2 → GND ビア   ほかのピンは NC
+// 同じ層の配線は交差させない。電源（+3V3・GND）は 5px、信号は 3px
 const chipPinYs = [272, 300, 328, 356, 384, 412];
-const flowPaths = ["M740 392 H700 L660 432 V560", "M1020 280 H1080 L1120 240 V104", "M1020 392 H1100 L1140 432 V560"];
+const flowPaths = ["M1020 392 H1100 L1140 432 V560", "M1020 280 H1040 L1070 250 V88 H1096", "M1020 420 H1060 L1100 460 V560"];
+
+// チップ部品（抵抗: 18×34 黒 / コンデンサ: 16×30 ベージュ、両端が端子）。print は本体への印字
+const SmdPart = ({ cx, cy, kind, print, horizontal = false }: { cx: number; cy: number; kind: "r" | "c"; print?: string; horizontal?: boolean }) => {
+  const [w, h, t] = kind === "r" ? [18, 34, 6] : [16, 30, 7];
+  const body = kind === "r" ? "#1E1F1C" : "#C8A06A";
+  const W = horizontal ? h : w;
+  const H = horizontal ? w : h;
+  const x = cx - W / 2;
+  const y = cy - H / 2;
+  return (
+    <g className="part">
+      <rect x={x} y={y} width={W} height={H} rx="2" fill="#B9B9B4" />
+      {horizontal
+        ? <rect x={x + t} y={y} width={W - 2 * t} height={H} fill={body} />
+        : <rect x={x} y={y + t} width={W} height={H - 2 * t} fill={body} />}
+      {print && (
+        <text
+          x={cx}
+          y={cy}
+          textAnchor="middle"
+          dominantBaseline="central"
+          transform={horizontal ? undefined : `rotate(90 ${cx} ${cy})`}
+          fontFamily="var(--font-jetbrains), 'JetBrains Mono', monospace"
+          fontSize="8"
+          letterSpacing="0.4"
+          fill="#E8E8E2"
+        >
+          {print}
+        </text>
+      )}
+    </g>
+  );
+};
+
+// LED（2 端子）: 左にアノード、右にカソードのパッド。シルクの外形線はカソード側を平らにする
+const Led = ({ cx, cy, cls }: { cx: number; cy: number; cls: string }) => (
+  <g>
+    <rect className="pad" x={cx - 29} y={cy - 6} width="10" height="12" rx="1.5" />
+    <rect className="pad" x={cx + 19} y={cy - 6} width="10" height="12" rx="1.5" />
+    <path className="silk" d={`M${cx + 10} ${cy - 17.3} A20 20 0 1 0 ${cx + 10} ${cy + 17.3} Z`} />
+    <circle className={`led-glow ${cls}`} cx={cx} cy={cy} r="45" fill="url(#led-glow-grad)" />
+    <circle className={`led ${cls}`} cx={cx} cy={cy} r="14" />
+  </g>
+);
 
 const HeroCircuit = () => (
   <svg viewBox="620 40 600 520" style={{ display: "block", width: "100%", height: "auto", overflow: "visible" }} aria-hidden="true">
@@ -233,22 +283,56 @@ const HeroCircuit = () => (
         <stop offset="1" stopColor="var(--led-glow)" stopOpacity="0" />
       </radialGradient>
     </defs>
-    <path className="trace" d="M740 392 H700 L660 432 V560" />
-    <path className="trace t2" d="M740 420 H724 L690 454 V560" />
-    <path className="trace t2" d="M1020 280 H1080 L1120 240 V104" />
-    <path className="trace t3" d="M1020 336 H1140 L1170 306 V186" />
+    {/* 電源: 1 番 +3V3 → 左上のビア、6 番 GND → 下端 */}
+    <path className="trace pwr" d="M740 280 H690 L660 250 V170" />
+    <path className="trace pwr t2" d="M740 420 H724 L690 454 V560" />
+    {/* パスコン C2: +3V3 の配線から分岐し、GND のビアへ */}
+    <path className="trace t2" d="M700 280 V296" />
+    <path className="trace t2" d="M700 326 V340" />
+    {/* 12 番 → R5 → D1、D1 カソード → GND ビア */}
+    <path className="trace t2" d="M1020 280 H1040 L1070 250 V181" />
+    <path className="trace t2" d="M1070 153 V88 H1096" />
+    <path className="trace t3" d="M1144 88 H1168" />
+    {/* 10 番 → R6 → D2、D2 カソード → GND ビア */}
+    <path className="trace t3" d="M1020 336 H1100 L1130 306 V263" />
+    <path className="trace t3" d="M1130 235 V170 H1146" />
+    <path className="trace t3" d="M1194 170 H1212" />
+    {/* 8 番 SDA → 下端（外側）、7 番 SCL → 下端（内側）。平行に下ろして交差させない */}
     <path className="trace t3" d="M1020 392 H1100 L1140 432 V560" />
-    <path className="trace t4" d="M1020 420 H1060 L1100 460 H1200" />
-    <path className="trace t4" d="M740 280 H690 L660 250 V170" />
-    <path className="trace t4" d="M740 336 H700" />
+    <path className="trace t4" d="M1020 420 H1060 L1100 460 V560" />
+    {/* プルアップ: SDA → 右へ R3 → +3V3 ビア、SCL → 左へ R4 → +3V3 ビア（IC の下の空き） */}
+    <path className="trace t4" d="M1140 516 H1159" />
+    <path className="trace t4" d="M1187 516 H1211" />
+    <path className="trace t4" d="M1100 516 H1081" />
+    <path className="trace t4" d="M1053 516 H1029" />
     {flowPaths.map((d) => (
       <path key={`g${d}`} className="flow flow-glow" d={d} />
     ))}
     {flowPaths.map((d) => (
       <path key={`f${d}`} className="flow" d={d} />
     ))}
+    {/* ビア: +3V3（左上）、C2 の GND、D1・D2 の GND、プルアップの +3V3（裏層経由） */}
     <circle className="via" cx="660" cy="170" r="8" />
-    <circle className="via" cx="700" cy="336" r="7" />
+    <circle className="via" cx="700" cy="348" r="7" />
+    <circle className="via" cx="1168" cy="88" r="7" />
+    <circle className="via" cx="1212" cy="170" r="7" />
+    <circle className="via" cx="1211" cy="516" r="7" />
+    <circle className="via" cx="1022" cy="516" r="7" />
+    {/* IC のピンが乗る銅のパッド */}
+    <g className="pad">
+      {chipPinYs.map((y) => (
+        <rect key={`pl${y}`} x="738" y={y - 2} width="24" height="20" rx="2" />
+      ))}
+      {chipPinYs.map((y) => (
+        <rect key={`pr${y}`} x="998" y={y - 2} width="24" height="20" rx="2" />
+      ))}
+    </g>
+    {/* 部品: C2 100n、R5 / R6 330、R3 / R4 4k7 */}
+    <SmdPart cx={700} cy={311} kind="c" />
+    <SmdPart cx={1070} cy={167} kind="r" print="331" />
+    <SmdPart cx={1130} cy={249} kind="r" print="331" />
+    <SmdPart cx={1173} cy={516} kind="r" print="472" horizontal />
+    <SmdPart cx={1067} cy={516} kind="r" print="472" horizontal />
     <g className="chip">
       <rect x="760" y="250" width="240" height="200" rx="6" fill="var(--chip)" />
       <g fill="var(--chip-pin)">
@@ -271,20 +355,49 @@ const HeroCircuit = () => (
       </text>
     </g>
     <g fontFamily="var(--font-jetbrains), 'JetBrains Mono', monospace" fontSize="12" fill="var(--silk-muted)">
-      <circle className="led-glow l1" cx="1120" cy="88" r="45" fill="url(#led-glow-grad)" />
-      <circle className="led l1" cx="1120" cy="88" r="14" />
-      <text x="1142" y="92">D1</text>
-      <circle className="led-glow l2" cx="1170" cy="170" r="45" fill="url(#led-glow-grad)" />
-      <circle className="led l2" cx="1170" cy="170" r="14" />
+      <Led cx={1120} cy={88} cls="l1" />
+      <text x="1104" y="62">D1</text>
+      <Led cx={1170} cy={170} cls="l2" />
       <text x="1150" y="140">D2</text>
-      <text x="764" y="238">U0</text>
+      <text x="764" y="238">U10</text>
+      {/* 部品番号（シルク） */}
+      <text x="684" y="315" textAnchor="end">C2</text>
+      <text x="1058" y="171" textAnchor="end">R5</text>
+      <text x="1118" y="253" textAnchor="end">R6</text>
+      <text x="1173" y="499" textAnchor="middle">R3</text>
+      <text x="1067" y="499" textAnchor="middle">R4</text>
       {/* シルク印刷の注記（配線・チップとは重ならない位置） */}
       <text x="672" y="164" fill="var(--silk-label)">+3V3</text>
-      <text x="628" y="552" fill="var(--silk-label)">GND</text>
+      <text x="688" y="352" textAnchor="end" fill="var(--silk-label)">GND</text>
+      <text x="700" y="552" fill="var(--silk-label)">GND</text>
       <text x="1148" y="552" fill="var(--silk-label)">SDA</text>
-      <text x="1110" y="476" fill="var(--silk-label)">SCL</text>
+      <text x="1108" y="552" fill="var(--silk-label)">SCL</text>
+      <text x="1218" y="541" textAnchor="end" fill="var(--silk-label)">+3V3</text>
+      <text x="1010" y="520" textAnchor="end" fill="var(--silk-label)">+3V3</text>
     </g>
   </svg>
+);
+
+// ＝＝＝ スパイン（+3V3）から左へ枝分かれした部品（PC のみ表示） ＝＝＝
+// 上の端子は水平の短い配線でスパインへ、下の端子は左へ伸びてビア（GND）かネット名（RST / SDA）へつなぐ。
+// left / width: 部品の左端と幅（中心がスパイン中心 57.5px の 40px 左 = 17.5px になる値。50% 基準の配線位置に幅が要る）
+// pinTop / pinBottom: 端子中心の y（部品の上端基準）
+const SpineBranch = ({ cls, refName, value, print, net, left, top, width, pinTop, pinBottom, lands = false }: {
+  cls: string; refName: string; value: string; print?: string; net: "GND" | "RST" | "SDA";
+  left: number; top: number; width: number; pinTop: number; pinBottom: number; lands?: boolean;
+}) => (
+  <span className="spine-branch hidden md:block" style={{ left, top, width }} aria-hidden="true">
+    <span className="spine-wire spine-wire--in" style={{ top: pinTop }} />
+    <span className="spine-wire spine-wire--out" style={{ top: pinBottom }} />
+    {net === "GND" && <span className="spine-via" style={{ top: pinBottom }} />}
+    <span className={`spine-net${net === "GND" ? " spine-net--via" : ""}`} style={{ top: pinBottom }}>{net}</span>
+    <span className={`spine-part ${cls}`}>
+      {print && <span className="spine-part-print">{print}</span>}
+      {lands && <span className="spine-land spine-land--top" />}
+      {lands && <span className="spine-land spine-land--bottom" />}
+      <span className="spine-part-label"><span className="ref">{refName}</span> <span className="val">{value}</span></span>
+    </span>
+  </span>
 );
 
 // ＝＝＝ Selected Works のデータ（並び順・文章・画像・リンク先は従来どおり） ＝＝＝
@@ -305,9 +418,9 @@ const worksData = [
     award: "100program 優秀インタビュー賞・オーディエンス賞 受賞",
     description:
       "実際に走った距離を全国の国道に重ね、キャラクターとともに目標期日までの完走を目指す、ランニング・ウォーキング記録アプリです。",
-    tech: ["Flutter (Dart)", "MapLibre GL", "geolocator", "health", "SQLite (sqflite)", "Firebase Authentication", "Cloud Firestore", "Terraform"],
+    tech: ["Flutter (Dart)", "MapLibre GL", "geolocator", "SQLite (sqflite)", "Firebase Authentication", "Cloud Firestore", "GitHub Actions", "Remotion"],
     image: { src: "/KOKUDO_feature_a.png", alt: "KOKUDO メインビジュアル" },
-    href: null,
+    href: "/kokudo",
   },
   {
     ref: "U103",
@@ -600,7 +713,7 @@ export default function Home() {
                 <span className="whitespace-nowrap">STECH所属・</span>
                 <span className="whitespace-nowrap">NxTEND東海事業部</span>
               </span>
-              <p className="text-[26px] font-bold text-silk mt-6">ラーメンと旅行大好きエンジニア</p>
+              <p className="text-[26px] font-bold text-silk mt-6">フッ軽エンジニア</p>
             </div>
 
             {/* 実績ごとに li で必ず改行し、実績の中は意味の塊ごとに nowrap で囲んで塊の間でだけ折り返す。
@@ -681,7 +794,7 @@ export default function Home() {
       <div data-pause-offscreen className="relative isolate w-full">
         <div className="pointer-events-none absolute inset-0 z-0 px-8 md:px-24" aria-hidden="true">
           <div className="relative h-full max-w-7xl mx-auto">
-            <span className="pcb-spine left-[22px] md:left-[56px]" />
+            <span className="pcb-spine left-[21.5px] md:left-[55.5px]" />
           </div>
         </div>
 
@@ -726,7 +839,7 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
           {/* テストポイント TP1: スパインの始まり（見出しより上）。中心をスパイン（22px / 56px）に合わせる */}
           <span className="spine-tp left-[14.5px] md:left-[48.5px] -top-[73px]" aria-hidden="true">
-            <span className="spine-tp-label">TP1 · VCC</span>
+            <span className="spine-tp-label">TP1 · +3V3</span>
           </span>
           <SectionTitle part="U1" index="01" title="About Me" fid="FID1" />
           <div className="flex flex-col lg:flex-row gap-16">
@@ -777,10 +890,8 @@ export default function Home() {
       {/* ＝＝＝ ニュース＆アクティビティ セクション ＝＝＝ */}
       <section id="news" className="w-full px-8 md:px-24 py-24 scroll-mt-[var(--header-h)]">
         <div className="relative max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
-          {/* About と News の間の抵抗 R1（セクションの切れ目と見出しのパッドの中間） */}
-          <span className="spine-part spine-part--r left-[16.5px] md:left-[50.5px] -top-[31px]" aria-hidden="true">
-            <span className="spine-part-label"><span className="ref">R1</span> <span className="val">10k</span></span>
-          </span>
+          {/* About と News の間の抵抗 R1（+3V3 → R1 → RST） */}
+          <SpineBranch cls="spine-part--r1" refName="R1" value="10k" print="103" net="RST" left={8.5} width={18} top={-33} pinTop={3} pinBottom={31} />
           <SectionTitle part="U2" index="02" title="Activity & News" tag="TEST LOG" fid />
 
           {/* 「日付 | 本文」の2列グリッド（スマホは縦積み） */}
@@ -821,10 +932,8 @@ export default function Home() {
       {/* ＝＝＝ プロジェクトセクション ＝＝＝ */}
       <section id="projects" className="w-full px-8 md:px-24 py-32 scroll-mt-[var(--header-h)]">
         <div className="relative max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
-          {/* News と Works の間のコンデンサ C1 */}
-          <span className="spine-part spine-part--c left-[16.5px] md:left-[50.5px] -top-[47px]" aria-hidden="true">
-            <span className="spine-part-label"><span className="ref">C1</span> <span className="val">100n</span></span>
-          </span>
+          {/* News と Works の間のコンデンサ C1（+3V3 → C1 → GND） */}
+          <SpineBranch cls="spine-part--c" refName="C1" value="100n" net="GND" left={10.5} width={14} top={-47} pinTop={3.5} pinBottom={26.5} />
           <SectionTitle part="U3" index="03" title="Selected Works" fid="FID2" />
 
           {/* 1件目は横幅いっぱい、2〜5件目は2列（スマホは1列）。端子が左右に 10px はみ出すぶん横の余白を確保 */}
@@ -848,10 +957,8 @@ export default function Home() {
           <span className="mount-hole-label right-[calc(100%+18px)]">H4</span>
         </span>
         <div className="relative max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
-          {/* Works と Contact の間の抵抗 R2 */}
-          <span className="spine-part spine-part--r left-[16.5px] md:left-[50.5px] -top-[47px]" aria-hidden="true">
-            <span className="spine-part-label"><span className="ref">R2</span> <span className="val">4k7</span></span>
-          </span>
+          {/* Works と Contact の間の抵抗 R2（+3V3 → R2 → SDA。リード線の先はスルーホールのランド） */}
+          <SpineBranch cls="spine-part--r2" refName="R2" value="4k7" net="SDA" left={9.5} width={16} top={-50} pinTop={-10} pinBottom={46} lands />
           <SectionTitle part="J1" index="04" title="Get in Touch" />
 
           <Reveal margin="0px" delay={0.1} className="max-w-md mb-12">
@@ -875,7 +982,8 @@ export default function Home() {
                 >
                   {/* ピン番号 */}
                   <span className="font-mono text-[10px] leading-none text-silk-label" aria-hidden="true">{i + 1}</span>
-                  <span className="pin-pad" aria-hidden="true" />
+                  {/* 1 番ピン（X）だけ四角いパッド、2・3 番は丸いパッド */}
+                  <span className={`pin-pad${i > 0 ? " pin-pad--round" : ""}`} aria-hidden="true" />
                   <span className="pin-label flex items-center gap-2 font-mono text-[13px] text-silk transition-colors duration-200">
                     <ContactIcon kind={link.icon} />
                     {link.label}
