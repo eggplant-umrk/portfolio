@@ -627,3 +627,155 @@ html[data-intro="play"] .opening {
 .reveal-mask { opacity: 1; transform: none; transition: none; overflow: hidden; }
 .reveal-mask > * { transform: translateY(115%); transition: transform .8s cubic-bezier(.22, 1, .36, 1); }
 .reveal-mask.is-in > * { transform: none; }
+
+/* ======================================================================
+   基板らしい装飾: 取り付け穴・位置合わせマーク・スパイン上の部品・背景の配線パターン・シルク印刷の注記
+   色はすべてテーマの CSS 変数（部品の本体色だけ固定）。装飾は aria-hidden と pointer-events: none
+   ====================================================================== */
+
+/* ＝＝＝ 取り付け穴 H1〜H4（直径 30px、銅の太枠、外側 14px にラベル色の点線の円）＝＝＝ */
+.mount-hole {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 6px solid var(--copper);
+  background: var(--board-outer);
+  pointer-events: none;
+  isolation: isolate;
+  z-index: 1;
+}
+.mount-hole::before {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  border: 1px dotted var(--silk-label);
+  background: var(--board); /* 背景の配線パターンが点線の内側に入らないよう地の色で塗る */
+  opacity: 0.6;
+  z-index: -1;
+}
+.mount-hole-label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--silk-label);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* ＝＝＝ 位置合わせマーク（フィデューシャル）: 見出し行の右端。1023px 以下では非表示 ＝＝＝ */
+.fiducial { pointer-events: none; }
+
+/* ＝＝＝ スパイン上の部品（抵抗・コンデンサ）とテストポイント ＝＝＝ */
+.spine-part {
+  position: absolute;
+  width: 14px;
+  height: 30px;
+  border-radius: 2px;
+  pointer-events: auto; /* 部品だけはホバーさせる */
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.spine-part--r { background: linear-gradient(180deg, #B9B9B4 0 7px, #1E1F1C 7px 23px, #B9B9B4 23px 30px); }
+.spine-part--c { background: linear-gradient(180deg, #B9B9B4 0 7px, #C8A06A 7px 23px, #B9B9B4 23px 30px); }
+.spine-part:hover {
+  box-shadow: 0 0 0 3px rgba(255, 138, 80, .35), 0 0 18px #FF8A50;
+  transform: scale(1.15);
+}
+.spine-part-label,
+.spine-tp-label {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1;
+  pointer-events: none;
+}
+.spine-part-label .ref { color: var(--silk-soft); }
+.spine-part-label .val,
+.spine-tp-label { color: var(--silk-label); }
+.spine-tp {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--copper);
+  background: var(--board);
+  pointer-events: none;
+}
+.spine-tp::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--copper);
+}
+
+/* ＝＝＝ 背景の配線パターン（本文コンテナの外側の余白。1360px 以上のときだけ）＝＝＝ */
+.trace-bg {
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  width: calc(max(96px, (100% - 1280px) / 2) - 24px);
+  z-index: -1;
+  pointer-events: none;
+}
+.trace-bg-left { left: 0; }
+.trace-bg-right { right: 0; }
+@media (min-width: 1360px) {
+  .trace-bg { display: block; }
+}
+.trace-bg-lines {
+  fill: none;
+  stroke: var(--copper);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.32;
+}
+.trace-bg-vias {
+  fill: var(--board);
+  stroke: var(--copper);
+  stroke-width: 2;
+  opacity: 0.45;
+}
+
+/* ＝＝＝ シルク印刷の枠（BOM・BOARD INFO）＝＝＝ */
+.silk-frame {
+  position: relative;
+  border: 1px dotted var(--silk-label);
+  border-radius: 4px;
+  padding: 20px 16px 12px;
+}
+.silk-frame-label {
+  position: absolute;
+  top: -7px;
+  left: 12px;
+  padding: 0 6px;
+  background: var(--board); /* 枠線を切る */
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  color: var(--silk-label);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* スマホ（767px 以下）: 取り付け穴・位置合わせマーク・背景の配線は出さない */
+@media (max-width: 767px) {
+  .mount-hole,
+  .fiducial,
+  .trace-bg { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spine-part:hover { transform: none; }
+}
