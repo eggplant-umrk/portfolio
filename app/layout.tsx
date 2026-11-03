@@ -48,21 +48,29 @@ export default function RootLayout({
   return (
     <html
       lang="ja"
-      className={`${chakraPetch.variable} ${jetBrainsMono.variable} ${zenKakuGothicNew.variable} h-full antialiased scroll-smooth dark`}
+      className={`${chakraPetch.variable} ${jetBrainsMono.variable} ${zenKakuGothicNew.variable} h-full antialiased scroll-smooth`}
+      data-board="white"
       suppressHydrationWarning
     >
       <head>
-        {/* 初回訪問の判定（オープニングを出すか）。描画前に走らせて <html data-intro="play"> を付け、
-            2回目以降にオープニングが一瞬でも映らないようにする。sessionStorage が読めない環境では何もしない。
+        {/* ブラウザ UI の色（アドレスバーなど）。基板の色に合わせて下のスクリプトと BoardSwitch が書き換える */}
+        <meta name="theme-color" content="#F2F1EA" />
+        {/* 描画前に走らせる判定。
+            1) 基板の色: localStorage "portfolio_board"（green / blue）を <html data-board> と theme-color に反映し、
+               読み込み時に別の色が映らないようにする。無い・読めない・不正値なら既定の white のまま。
+               旧キー "board" が残っていれば portfolio_board に移して削除する。OS のライト/ダーク設定には連動させない。
+            2) 初回訪問: sessionStorage が無くハッシュも無ければ <html data-intro="play"> を付けてオープニングを出す。
             訪問済みフラグの書き込みは app/page.tsx のマウント時（従来どおり） */}
         <script
           dangerouslySetInnerHTML={{
             __html:
+              'try{var b=localStorage.getItem("portfolio_board");if(!b){var o=localStorage.getItem("board");if(o){localStorage.setItem("portfolio_board",o);localStorage.removeItem("board");b=o}}' +
+              'if(b==="green"||b==="blue"){document.documentElement.setAttribute("data-board",b);var m=document.querySelector("meta[name=theme-color]");if(m){m.setAttribute("content",b==="green"?"#0D2E22":"#10325A")}}}catch(e){}' +
               'try{if(!sessionStorage.getItem("portfolio_visited")&&!location.hash){document.documentElement.setAttribute("data-intro","play")}}catch(e){}',
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-background text-foreground font-sans transition-colors duration-500">
+      <body className="min-h-full flex flex-col bg-board-outer text-silk font-sans">
         <ProbeCursor /> {/* サイト全体にプローブ型カーソルを配置（PC のみ表示） */}
         {children}
       </body>
