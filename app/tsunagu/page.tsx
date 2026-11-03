@@ -252,7 +252,8 @@ export default function TsunaguDetail() {
       </article>
 
       {/* ＝＝＝ フッター（コンタクト情報） ＝＝＝ */}
-      <footer className="w-full pt-24 pb-12 bg-board-outer border-t border-line flex flex-col items-center mt-16">
+      {/* 下余白は右下の固定表示（基板の色の切り替え: 高さ 49px + 余白 24px）に文字が隠れない量にする */}
+      <footer className="w-full pt-24 pb-24 bg-board-outer border-t border-line flex flex-col items-center mt-16">
         <div className="flex flex-col gap-6 mb-16 items-start">
 
           <a href="https://x.com/rikuumezawa" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-silk hover:text-silk-muted transition-colors group">
