@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "./lib/seo";
 import LazyProbe from "./components/LazyProbe"; // 測定プローブ型カーソル（マウスのある端末で、手が空いてから読み込む）
+import BoardAuto from "./components/BoardAuto"; // 基板の色を OS のダークモード設定に追従（保存値がない人だけ）
 
 // 見出し・名前（使っているのは 700 のみ）
 const chakraPetch = Chakra_Petch({
@@ -73,8 +74,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#F2F1EA" />
         {/* 描画前に走らせる判定。
             1) 基板の色: localStorage "portfolio_board"（green / blue）を <html data-board> と theme-color に反映し、
-               読み込み時に別の色が映らないようにする。無い・読めない・不正値なら既定の white のまま。
-               旧キー "board" が残っていれば portfolio_board に移して削除する。OS のライト/ダーク設定には連動させない。
+               読み込み時に別の色が映らないようにする。旧キー "board" が残っていれば portfolio_board に移して削除する。
+               保存値が無い人は OS のダークモード設定（prefers-color-scheme: dark）なら green、それ以外・読めないときは white。
+               自動で決めた色は保存しない（保存するのは本人が切り替えボタンを押したときだけ）。
             2) 初回訪問: sessionStorage が無くハッシュも無ければ <html data-intro="play"> を付けてオープニングを出す。
             訪問済みフラグの書き込みは app/page.tsx のマウント時（従来どおり）
             3) レイヤー表示: localStorage "portfolio_layers"（空白区切り。fcu / bcu / silks / edge のみ有効）を
@@ -83,6 +85,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html:
               'try{var b=localStorage.getItem("portfolio_board");if(!b){var o=localStorage.getItem("board");if(o){localStorage.setItem("portfolio_board",o);localStorage.removeItem("board");b=o}}' +
+              'if(b!=="green"&&b!=="blue"&&b!=="white"){b=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"green":"white"}' +
               'if(b==="green"||b==="blue"){document.documentElement.setAttribute("data-board",b);var m=document.querySelector("meta[name=theme-color]");if(m){m.setAttribute("content",b==="green"?"#0D2E22":"#10325A")}}}catch(e){}' +
               'try{if(!sessionStorage.getItem("portfolio_visited")&&!location.hash){document.documentElement.setAttribute("data-intro","play")}}catch(e){}' +
               'try{var l=localStorage.getItem("portfolio_layers");if(typeof l==="string"){var v=l.split(" ").filter(function(t){return t==="fcu"||t==="bcu"||t==="silks"||t==="edge"});document.documentElement.setAttribute("data-layers",v.join(" "))}}catch(e){}',
@@ -90,6 +93,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-board-outer text-silk font-sans">
+        <BoardAuto /> {/* OS のダークモード設定が変わったときの追従（保存値がない人だけ） */}
         <LazyProbe /> {/* サイト全体にプローブ型カーソルを配置（PC のみ。最初の表示が終わってから読み込む） */}
         {children}
       </body>
