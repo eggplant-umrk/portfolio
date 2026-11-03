@@ -47,6 +47,10 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
   },
+  // Google Search Console の所有権確認（<meta name="google-site-verification">）
+  verification: {
+    google: "peCh05ipr597sLrWFNxjsDp27gnzR_YbqVAFm0apUZc",
+  },
 };
 
 export default function RootLayout({
