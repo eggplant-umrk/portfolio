@@ -243,6 +243,9 @@ const SectionTitle = ({ index, title }: { index: string; title: string }) => (
 );
 
 const newsData = [
+  { date: "2026/11/02", text: "技育展 予選敗退" },
+  { date: "2026/10/10", text: "Matsuriba夏祭り参加" },
+  { date: "2026/10/03", text: "STECH FES LT参加" },
   { date: "2026/09/29", text: "HACK STAGE 3 最優秀賞 受賞" },
   { date: "2026/09/19", text: "100program 優秀インタビュー賞・オーディエンス賞×3 受賞" },
   { date: "2026/09/09", text: "特定非営利活動法人NxTEND東海事業部所属" },
