@@ -8,12 +8,13 @@ import { useEffect, useRef } from "react";
 // 位置は transform で動かし、描画は requestAnimationFrame にまとめて負荷を抑える。
 
 // ネットごとの表示値（Hero の回路と左のスパインの接続に合わせる）
-//   +3V3: 電源 / GND / RST: プルアップで High / LED1・LED2: 電流制限抵抗と LED の間（LED の順方向電圧）
+//   +3V3: 電源 / GND / RST・INT: R1・R2 のプルアップで High（U10 の 4 番・9 番） / LED1・LED2: 電流制限抵抗と LED の間（LED の順方向電圧）
 //   OUT1・OUT2: IC の 12 番・10 番ピンと抵抗の間（出力 High）/ NC: 未接続ピン
 const NET_VALUE: Record<string, string> = {
   "+3V3": "3.30 V",
   GND: "0.00 V",
   RST: "3.30 V",
+  INT: "3.30 V",
   LED1: "2.00 V",
   LED2: "2.00 V",
   OUT1: "3.30 V",
@@ -55,6 +56,11 @@ export default function ProbeCursor() {
     const wavePath = wavePathRef.current;
     if (!root || !xy || !name || !value || !wave || !wavePath) return;
 
+    // プローブが動いている間だけ純正のカーソルを消す（globals.css の html.probe-on）。
+    // 動きを減らす設定の人には消さない。ここに来る前に読み込みが失敗したときは、このクラスが付かないので消えない
+    const hideCursor = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (hideCursor) document.documentElement.classList.add("probe-on");
+
     let x = 0;
     let y = 0;
     let net = "";
@@ -87,18 +93,33 @@ export default function ProbeCursor() {
       }
     };
 
-    const onMove = (e: MouseEvent) => {
-      x = e.clientX;
-      y = e.clientY;
-      const target = e.target as Element | null;
+    // カーソルの下にある要素から、乗っているネットを読む
+    const readNet = (target: Element | null) => {
       const hit = target && typeof target.closest === "function" ? target.closest<Element>("[data-net]") : null;
       net = hit?.getAttribute("data-net") ?? "";
       label = hit?.getAttribute("data-label") ?? "";
+    };
+
+    const onMove = (e: MouseEvent) => {
+      x = e.clientX;
+      y = e.clientY;
+      readNet(e.target as Element | null);
       if (!visible) {
         root.style.opacity = "1";
         visible = true;
       }
       if (!raf) raf = requestAnimationFrame(render);
+    };
+
+    // マウスを動かさずにスクロールしたときも、同じ画面位置の下に来たネットで表示を更新する（rAF で 1 フレームに 1 回）
+    let scrollRaf = 0;
+    const onScroll = () => {
+      if (!visible || scrollRaf) return;
+      scrollRaf = requestAnimationFrame(() => {
+        scrollRaf = 0;
+        readNet(document.elementFromPoint(x, y));
+        if (!raf) raf = requestAnimationFrame(render);
+      });
     };
 
     // ページから出たら隠す
@@ -108,11 +129,15 @@ export default function ProbeCursor() {
     };
 
     window.addEventListener("mousemove", onMove, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     document.documentElement.addEventListener("mouseleave", onLeave);
     return () => {
       window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("scroll", onScroll);
       document.documentElement.removeEventListener("mouseleave", onLeave);
       if (raf) cancelAnimationFrame(raf);
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      document.documentElement.classList.remove("probe-on");
     };
   }, []);
 

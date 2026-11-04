@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import BoardSwitch from "./BoardSwitch";
 import { useHideOnScroll } from "../lib/use-hide-on-scroll";
 
@@ -14,24 +14,62 @@ const navLinks = [
 
 export default function Header({ delayBase }: { delayBase: number }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const firstLinkRef = useRef<HTMLAnchorElement>(null);
   // 1023px 以下: 下にスクロールしている間は上へ隠す（.is-hidden、globals.css）。メニューが開いている間は隠さない
   const hidden = useHideOnScroll({ hold: isMenuOpen });
 
+  // メニューを開いている間: 最初のリンクにフォーカスを移し、Esc で閉じてハンバーガーボタンへ戻す。
+  // メニューの外（ヘッダーの兄弟 = 本文・フッターなど）は inert にして、Tab と読み上げが本文へ抜けないようにする。
+  // ヘッダーの中のロゴと PC 用ナビは JSX 側の inert 属性で止める（ハンバーガーボタンは残す）
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    // メニューは visibility のトランジションで現れるため、開いた直後のフレームでは focus() が効かないことがある。
+    // フォーカスが移るまで数フレーム（最大 0.5 秒ほど）繰り返す
+    let raf = 0;
+    const focusFirst = (tries: number) => {
+      const el = firstLinkRef.current;
+      if (!el) return;
+      el.focus();
+      if (document.activeElement !== el && tries > 0) raf = requestAnimationFrame(() => focusFirst(tries - 1));
+    };
+    raf = requestAnimationFrame(() => focusFirst(30));
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsMenuOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    const header = headerRef.current;
+    const siblings = header?.parentElement ? Array.from(header.parentElement.children).filter((el) => el !== header) : [];
+    siblings.forEach((el) => el.setAttribute("inert", ""));
+    return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener("keydown", onKey);
+      siblings.forEach((el) => el.removeAttribute("inert"));
+    };
+  }, [isMenuOpen]);
+
   return (
     <header
+      ref={headerRef}
       className={`${hidden ? "is-hidden " : ""}header-in site-header fixed top-0 left-0 w-full z-40 h-[var(--header-h)] flex items-center justify-between md:backdrop-blur-md bg-board/90 md:bg-board/70 border-b border-line`}
       style={{ "--d": `${delayBase}s` } as CSSProperties}
     >
-      {/* ロゴ風「RU」（銅色の枠）+ リビジョン表記 */}
-      <a href="#" className="flex items-center gap-3 whitespace-nowrap group max-lg:min-h-11" aria-label="RIKU UMEZAWA">
+      {/* ロゴ風「RU」（銅色の枠）+ リビジョン表記。読み上げ名は見えている文字（RU REV 2026.11）をそのまま含めて始める */}
+      <a href="#" className="flex items-center gap-3 whitespace-nowrap group max-lg:min-h-11" aria-label="RU REV 2026.11 — トップへ戻る" inert={isMenuOpen || undefined}>
         <span className="flex items-center justify-center w-9 h-9 rounded-[4px] border-2 border-copper font-display font-bold text-sm tracking-tight text-copper-light group-hover:text-copper-hover group-active:text-copper-hover transition-colors">
           RU
         </span>
+        {/* 間の空白は flex では描画されないが、読み上げと支援技術には「RU REV 2026.11」と区切って伝わる */}
+        {" "}
         <span className="font-mono text-[12px] tracking-[0.12em] text-silk-label">REV 2026.11</span>
       </a>
 
       {/* デスクトップ用ナビ + 基板の色切り替え（lg 以上のみ表示。768〜1023px ではヘッダーに入りきらないためメニュー側） */}
-      <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+      <div className="hidden lg:flex items-center gap-6 xl:gap-8" inert={isMenuOpen || undefined}>
       <nav className="flex items-center gap-6 xl:gap-10">
         {navLinks.map((link) => (
           <a
@@ -49,6 +87,7 @@ export default function Header({ delayBase }: { delayBase: number }) {
 
       {/* ハンバーガーボタン（lg未満のみ表示） */}
       <button
+        ref={buttonRef}
         onClick={() => setIsMenuOpen((prev) => !prev)}
         aria-label={isMenuOpen ? "メニューを閉じる" : "メニューを開く"}
         aria-expanded={isMenuOpen}
@@ -77,6 +116,7 @@ export default function Header({ delayBase }: { delayBase: number }) {
         {navLinks.map((link, i) => (
           <a
             key={link.href}
+            ref={i === 0 ? firstLinkRef : undefined}
             href={link.href}
             onClick={() => setIsMenuOpen(false)}
             tabIndex={isMenuOpen ? 0 : -1}

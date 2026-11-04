@@ -25,7 +25,7 @@ export default function NewsList({ items }: { items: { date: string; text: strin
     setVisibleNews(NEWS_STEP);
     // 閉じたとき、News の見出しが画面外（ヘッダーの下に隠れている場合を含む）なら見出しまで戻す
     const section = document.getElementById("news");
-    const heading = section?.querySelector("h3");
+    const heading = section?.querySelector("h2");
     if (section && heading) {
       const rect = heading.getBoundingClientRect();
       const headerH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-h")) || 0;

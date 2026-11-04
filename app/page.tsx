@@ -6,24 +6,19 @@ import Opening from "./components/Opening"; // 初回訪問のオープニング
 import NewsList from "./components/NewsList"; // News の「もっと見る」
 import PageEffects from "./components/PageEffects"; // 表示域の監視・パララックス・画面外の停止
 import LazyLayerPanel from "./components/LazyLayerPanel"; // レイヤー表示の切り替え（マウスのある端末で、あとから読み込む）
-import { pageMetadata, SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "./lib/seo";
+import { pageMetadata, pageUrl, personJsonLd, SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "./lib/seo";
+import { worksData, type Work } from "./data/works"; // Selected Works のデータ
+import { newsData } from "./data/news"; // Activity & News のデータ
+import { contactLinks, ContactIcon } from "./components/ContactLinks"; // 連絡先（URL は lib/profile.ts）
 
 // 検索向け: title / description / canonical / og / twitter（値は app/lib/seo.ts）
 export const metadata = pageMetadata({ title: SITE_NAME, description: SITE_DESCRIPTION, path: "/" });
 
-// 構造化データ（JSON-LD）: 人物とサイト。sameAs は X と、サイト内の GitHub リンクと同じ URL
+// 構造化データ（JSON-LD）: 人物（app/lib/seo.ts の personJsonLd。sameAs は X と GitHub）とサイト
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
-    {
-      "@type": "Person",
-      name: "梅澤 陸",
-      alternateName: "Riku Umezawa",
-      url: SITE_URL,
-      jobTitle: "Front-End Developer",
-      affiliation: { "@type": "CollegeOrUniversity", name: "愛知工業大学" },
-      sameAs: ["https://x.com/rikuumezawa", "https://github.com/eggplant-umrk"],
-    },
+    personJsonLd,
     {
       "@type": "WebSite",
       name: SITE_NAME,
@@ -111,9 +106,9 @@ const SectionTitle = ({
     <div className="relative flex items-end justify-between gap-4">
       <span className="pcb-pad layer-fcu" aria-hidden="true" />
       <Reveal variant="mask">
-        <h3 className="font-display font-bold text-4xl md:text-[56px] leading-none tracking-tight text-silk">
+        <h2 className="font-display font-bold text-4xl md:text-[56px] leading-none tracking-tight text-silk">
           {title}
-        </h3>
+        </h2>
       </Reveal>
       <div className="flex items-end shrink-0">
         {/* スマホでは見出しの幅を潰さないよう、ラベル行の右端（見出しの上）に逃がす */}
@@ -143,13 +138,14 @@ const SectionTitle = ({
 // 回路としての整合（U10 = 12 ピン SOIC。左を上から 1〜6、右を下から 7〜12）
 //   1: +3V3（左上のビアへ。すぐそばにパスコン C2 100n → GND ビア）   6: GND（下端へ）
 //   8: SDA / 7: SCL（どちらも下端へ。R3 / R4 4k7 で +3V3 にプルアップ。その +3V3 は裏層経由＝ビアで表す）
-//   12: → R5 330 → D1 → GND ビア   10: → R6 330 → D2 → GND ビア   ほかのピンは NC
+//   12: → R5 330 → D1 → GND ビア   10: → R6 330 → D2 → GND ビア
+//   4: RST / 9: INT（配線は描かず、ネット名のラベルで示す。スパインの R1 → RST、R2 → INT の各プルアップと同じネット）   ほかのピンは NC
 // 同じ層の配線は交差させない。電源（+3V3・GND）は 5px、信号は 3px
 const chipPinYs = [272, 300, 328, 356, 384, 412];
 const flowPaths = ["M1020 392 H1100 L1140 432 V560", "M1020 280 H1040 L1070 250 V88 H1096", "M1020 420 H1060 L1100 460 V560"];
 // ピンの割り当て（左 1〜6 を上から、右 7〜12 を下から）。プローブの表示用: ピン名とネット
-const leftPins = ["VCC", "NC", "NC", "NC", "NC", "GND"];
-const rightPins = ["SCL", "SDA", "NC", "OUT2", "NC", "OUT1"]; // 下から 7, 8, 9, 10, 11, 12
+const leftPins = ["VCC", "NC", "NC", "RST", "NC", "GND"];
+const rightPins = ["SCL", "SDA", "INT", "OUT2", "NC", "OUT1"]; // 下から 7, 8, 9, 10, 11, 12
 const pinNet = (name: string) => (name === "VCC" ? "+3V3" : name);
 // プローブの当たり判定（ネットごとの透明な太い線。描画はしない）
 const netHits: { net: string; d: string }[] = [
@@ -327,6 +323,9 @@ const HeroCircuit = () => (
       <text x="1108" y="552" fill="var(--silk-label)">SCL</text>
       <text x="1218" y="541" textAnchor="end" fill="var(--silk-label)">+3V3</text>
       <text x="1010" y="520" textAnchor="end" fill="var(--silk-label)">+3V3</text>
+      {/* ネット名のラベル: 4 番 RST（左）・9 番 INT（右）。配線は描かず、同じ名前のネット（スパインの R1 / R2）につながる表現 */}
+      <text x="732" y="370" textAnchor="end" fill="var(--silk-label)">RST</text>
+      <text x="1028" y="370" fill="var(--silk-label)">INT</text>
     </g>
     {/* ＝＝ プローブの当たり判定（透明。F.Cu を消したときは判定も消える） ＝＝ */}
     <g className="net-hit layer-fcu">
@@ -344,11 +343,11 @@ const HeroCircuit = () => (
 );
 
 // ＝＝＝ スパイン（+3V3）から左へ枝分かれした部品（PC のみ表示） ＝＝＝
-// 上の端子は水平の短い配線でスパインへ、下の端子は左へ伸びてビア（GND）かネット名（RST / SDA）へつなぐ。
+// 上の端子は水平の短い配線でスパインへ、下の端子は左へ伸びてビア（GND）かネット名（RST / INT）へつなぐ。
 // left / width: 部品の左端と幅（中心がスパイン中心 57.5px の 40px 左 = 17.5px になる値。50% 基準の配線位置に幅が要る）
 // pinTop / pinBottom: 端子中心の y（部品の上端基準）
 const SpineBranch = ({ cls, refName, value, print, net, left, top, width, pinTop, pinBottom, lands = false }: {
-  cls: string; refName: string; value: string; print?: string; net: "GND" | "RST" | "SDA";
+  cls: string; refName: string; value: string; print?: string; net: "GND" | "RST" | "INT";
   left: number; top: number; width: number; pinTop: number; pinBottom: number; lands?: boolean;
 }) => (
   <span className="spine-branch hidden md:block" style={{ left, top, width }} aria-hidden="true">
@@ -368,62 +367,8 @@ const SpineBranch = ({ cls, refName, value, print, net, left, top, width, pinTop
   </span>
 );
 
-// ＝＝＝ Selected Works のデータ（並び順・文章・画像・リンク先は従来どおり） ＝＝＝
-const worksData = [
-  {
-    ref: "U101",
-    title: "TSUNAGU",
-    award: "THE HACK 2026 東海予選1位通過 → 本選 デジタルフォルン賞・副大賞 受賞",
-    description:
-      "「通信が途絶えても、現場の状況は途絶えない」——災害時の避難所状況を収集・可視化するOffline First型の報告プラットフォーム。通信断時はLoRaで最低限の状況を本部へ届けます。",
-    tech: ["React 19", "Vite", "FastAPI", "PostgreSQL", "AWS", "Terraform", "LoRa (ESP32)"],
-    image: { src: "/tsunagu-hero.png", alt: "TSUNAGU メインビジュアル" },
-    href: "/tsunagu",
-  },
-  {
-    ref: "U102",
-    title: "KOKUDO",
-    award: "100program 優秀インタビュー賞・オーディエンス賞 受賞",
-    description:
-      "実際に走った距離を全国の国道に重ね、キャラクターとともに目標期日までの完走を目指す、ランニング・ウォーキング記録アプリです。",
-    tech: ["Flutter (Dart)", "MapLibre GL", "geolocator", "SQLite (sqflite)", "Firebase Authentication", "Cloud Firestore", "GitHub Actions", "Remotion"],
-    image: { src: "/KOKUDO_feature_a.png", alt: "KOKUDO メインビジュアル" },
-    href: "/kokudo",
-  },
-  {
-    ref: "U103",
-    title: "TrailDrop",
-    award: "HACK STAGE 3 最優秀賞受賞",
-    description:
-      "目的地へ向かう旅行者のルートと通過時間から、その途中で受け取れる地域の商品を見つけ、予約・受取までをつなげるサービス。旅行者は出発地・目的地・出発時間を入力すると、ルート上の地域商品を確認でき、予約後に発行されるQRコードを使って道の駅などの無人受取ロッカーで商品を受け取れる。「わざわざ寄る」のではなく「通り道だから寄れる」ことで、いつもの旅に地域との接点をつくることを目指す。",
-    tech: ["React", "Vite", "Tailwind CSS", "Python", "FastAPI", "Supabase", "PostgreSQL", "Google Routes API", "Google Maps", "qrcode.react"],
-    image: { src: "/traildrop-hero.png", alt: "TrailDrop メインビジュアル" },
-    href: "/traildrop",
-  },
-  {
-    ref: "U104",
-    title: "muscloop",
-    award: "SysHack2026 CyberAgent Award",
-    description:
-      "モダンな技術スタックを用いた滑らかなユーザー体験にこだわっています。 今後はApple Developer Programに登録し、HealthKitと連携した本格的なヘルスケアデータ取得を実装予定です。",
-    tech: ["React Native (Expo)", "FastAPI", "Firebase", "Docker", "AWS ECS", "HealthKit (実装予定)"],
-    image: { src: "/muscloop.webp", alt: "muscloop Pamphlet" },
-    href: "/muscloop",
-  },
-  {
-    ref: "U105",
-    title: "Taleglot",
-    award: "100program オーディエンス賞×2 受賞",
-    description:
-      "言語と文化を学べるインタラクティブ絵本。タイに実在する民話を、絵本のように読み進めながらタイ語にふれられる学習アプリです。",
-    tech: ["React", "Vite", "JavaScript", "localStorage", "HTML / CSS"],
-    image: { src: "/taleglot.png", alt: "Taleglot メインビジュアル" },
-    href: null,
-  },
-];
-
 // ＝＝＝ IC チップ型の作品カード（詳細ページがあるものはカード全体がリンク） ＝＝＝
-const WorkCard = ({ work, featured = false }: { work: (typeof worksData)[number]; featured?: boolean }) => {
+const WorkCard = ({ work, featured = false }: { work: Work; featured?: boolean }) => {
   const inner = (
     <>
       {/* 上: 画像枠 */}
@@ -442,7 +387,7 @@ const WorkCard = ({ work, featured = false }: { work: (typeof worksData)[number]
         <span className="chip-pin1" aria-hidden="true" />
         <p className="font-mono text-[12px] tracking-[0.12em] text-chip-label">{work.ref}</p>
         <p className="text-[13px] max-md:text-[15px] font-bold text-chip-led mt-3">{work.award}</p>
-        <h4 className="font-display font-bold text-[34px] leading-tight text-chip-text mt-2">{work.title}</h4>
+        <h3 className="font-display font-bold text-[34px] leading-tight text-chip-text mt-2">{work.title}</h3>
         {/* 767px 以下: 詳細ページがあるカードは説明文を 3 行で切る（続きは詳細ページで読める）。Taleglot は全文のまま */}
         <p className={`${work.href ? "max-md:line-clamp-3 " : ""}text-[14px] max-md:text-[15px] leading-[1.8] text-chip-soft mt-4`}>{work.description}</p>
         <div className="flex flex-wrap gap-2 mt-5">
@@ -480,66 +425,14 @@ const WorkCard = ({ work, featured = false }: { work: (typeof worksData)[number]
   );
 };
 
-// ＝＝＝ Get in Touch のアイコン（従来の X / GitHub / メールの SVG をピン名の横に小さく残す） ＝＝＝
-const ContactIcon = ({ kind }: { kind: "x" | "github" | "mail" }) => {
-  if (kind === "x") {
-    return (
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-      </svg>
-    );
-  }
-  if (kind === "github") {
-    return (
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
-        <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
-      </svg>
-    );
-  }
-  return (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-      <polyline points="22,6 12,13 2,6"/>
-    </svg>
-  );
-};
-
-const contactLinks: { label: string; href: string; icon: "x" | "github" | "mail"; external: boolean }[] = [
-  { label: "rikuumezawa", href: "https://x.com/rikuumezawa", icon: "x", external: true },
-  { label: "eggplant-umrk", href: "https://github.com/eggplant-umrk", icon: "github", external: true },
-  { label: "eggplant2006@au.com", href: "mailto:eggplant2006@au.com", icon: "mail", external: false },
-];
-
-const newsData = [
-  { date: "2026/11/02", text: "技育展 予選敗退" },
-  { date: "2026/10/10", text: "Matsuriba夏祭り参加" },
-  { date: "2026/10/03", text: "STECH FES LT参加" },
-  { date: "2026/09/29", text: "HACK STAGE 3 最優秀賞 受賞" },
-  { date: "2026/09/19", text: "100program 優秀インタビュー賞・オーディエンス賞×3 受賞" },
-  { date: "2026/09/09", text: "特定非営利活動法人NxTEND東海事業部所属" },
-  { date: "2026/08/28", text: "STECH に加入" },
-  { date: "2026/08/22", text: "THE HACK 2026 本選 デジタルフォルン賞・副大賞を受賞" },
-  { date: "2026/08/09", text: "THE HACK 2026 東海予選1位通過" },
-  { date: "2026/08/08", text: "100program 10期 参加" },
-  { date: "2026/08/01", text: "STECH CONNECT TOKAI 2026 参加" },
-  { date: "2026/07/17", text: "29Tech vol.2 参加" },
-  { date: "2026/07/11", text: "技育祭関西 参加" },
-  { date: "2026/07/09", text: "Matsuriba vol.15 参加" },
-  { date: "2026/06/20", text: "技育祭九州 参加" },
-  { date: "2026/05/30", text: "技育博2026 vol1 に出展・参加" },
-  { date: "2026/05/15", text: "Matsuriba vol.14 参加" },
-  { date: "2026/04/26", text: "技育祭東海 参加" },
-  { date: "2026/04/17", text: "エンジニアとしての個人名刺を作成!" },
-  { date: "2026/03/31", text: "SysHack 2026 参加 / CyberAgent賞を受賞" },
-  { date: "2026/03/08", text: "Matsurib MAX 2026 参加" },
-  { date: "2026/02/11", text: "ニックトレイン 参加" },
-];
-
 export default function Home() {
   return (
     <div className="pcb-board flex flex-col items-center w-full overflow-hidden relative text-silk">
       {/* 構造化データ（実行されないスクリプト。CSP の script-src には影響しない） */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {/* canonical と og:url（トップだけ末尾 / を付けた形。metadata API だと origin だけになるため、ここで描画して <head> に移してもらう） */}
+      <link rel="canonical" href={pageUrl("/")} />
+      <meta property="og:url" content={pageUrl("/")} />
       <PageEffects />
       {/* ＝＝＝ Edge.Cuts: 基板の外形線（ページの外周から 12px 内側） ＝＝＝ */}
       <span className="board-edge layer-edge" aria-hidden="true" />
@@ -560,10 +453,14 @@ export default function Home() {
       {/* ＝＝＝ オープニングアニメーション（初回訪問のみ。components/Opening.tsx） ＝＝＝ */}
       <Opening />
 
+      {/* ＝＝＝ 本文（Hero から Get in Touch まで。ヘッダー・オープニング・レイヤー切り替えは外） ＝＝＝ */}
+      {/* 親と同じ縦の flex（w-full・items-center）にして、中の並びと幅を変えない */}
+      <main className="w-full flex flex-col items-center">
+
       {/* ＝＝＝ ヒーローセクション ＝＝＝ */}
       {/* PC は左に文字（最大 640px）・右に回路（最大 540px）の2列、スマホは文字→回路の縦並び。
           起動演出は globals.css の .hero-in / .hero-circuit（CSS アニメーション）で、ページ表示と同時に始まる */}
-      <main
+      <section
         data-pause-offscreen
         className="relative min-h-screen-dvh flex flex-col w-full overflow-hidden pt-[calc(var(--header-h)+48px)] pb-8"
       >
@@ -604,9 +501,9 @@ export default function Home() {
             </p>
 
             <div className="hero-in mt-6" style={{ "--d": "0.5s" } as CSSProperties}>
-              <h2 className="font-mono text-[16px] tracking-[0.2em] uppercase text-copper-light">
+              <p className="font-mono text-[16px] tracking-[0.2em] uppercase text-copper-light">
                 Front-End Developer
-              </h2>
+              </p>
               <span className="inline-block font-mono text-xs tracking-wider text-copper-light border-[1.5px] border-copper px-3 py-1.5 rounded-full mt-4">
                 <span className="whitespace-nowrap">愛知工業大学</span>{" "}
                 <span className="whitespace-nowrap">システム工学研究会・</span>
@@ -621,7 +518,7 @@ export default function Home() {
                 各行の頭の配線と LED は globals.css の .hero-ach li::before / ::after */}
             <ul className="hero-in hero-ach mt-4 space-y-1 text-silk-soft leading-relaxed" style={{ "--d": "0.7s" } as CSSProperties}>
               <li>
-                <span className="whitespace-nowrap">SysHack2026</span>{" "}
+                <span className="whitespace-nowrap">SysHack 2026</span>{" "}
                 <span className="whitespace-nowrap">CyberAgent賞</span>
                 <span className="whitespace-nowrap">『muscloop』、</span>
               </li>
@@ -633,15 +530,15 @@ export default function Home() {
                 <span className="whitespace-nowrap">『TSUNAGU』、</span>
               </li>
               <li>
-                <span className="whitespace-nowrap">100program</span>{" "}
+                <span className="whitespace-nowrap">100Program</span>{" "}
                 <span className="whitespace-nowrap">優秀インタビュー賞・</span>
                 <span className="whitespace-nowrap">オーディエンス賞</span>
                 <span className="whitespace-nowrap">『KOKUDO』、</span>
               </li>
               <li>
-                <span className="whitespace-nowrap">100program</span>{" "}
+                <span className="whitespace-nowrap">100Program</span>{" "}
                 <span className="whitespace-nowrap">オーディエンス賞×2</span>
-                <span className="whitespace-nowrap">『taleglot』、</span>
+                <span className="whitespace-nowrap">『Taleglot』、</span>
               </li>
               <li>
                 <span className="whitespace-nowrap">HACK STAGE 3</span>{" "}
@@ -683,7 +580,7 @@ export default function Home() {
             2029 NEW GRAD — ENGINEER
           </span>
         </div>
-      </main>
+      </section>
 
       {/* ＝＝＝ マーキー帯 ＝＝＝ */}
       <Marquee />
@@ -754,7 +651,7 @@ export default function Home() {
                 現在はReact Nativeを中心に、Figmaを用いたデザインの基礎設計から実装まで一貫して手を動かす開発を探求しています。あわせてTSUNAGU開発では要件定義から携わり、個人ではRaspberry Piを使ってサーバー領域の学習にも手を出しています。
               </p>
               <p>
-                チーム「CPY」としてSysHack2026や技育博に出場し、プロダクトを形にする楽しさを知りました。THE HACK 2026本選ではTSUNAGUでデジタルフォルン賞・副大賞をW受賞し、VORN Challenge 2026本戦への出場権も獲得しています。2026年8月にはSTECHにも加入し、今後は東海・関東・関西など各地の技術イベントにも積極的に足を運び、エンジニアとしての視野と技術力をさらに広げていきたいと考えています。
+                チーム「cpy」としてSysHack 2026や技育博に出場し、プロダクトを形にする楽しさを知りました。THE HACK 2026本選ではTSUNAGUでデジタルフォルン賞・副大賞をW受賞し、VORN Challenge 2026本戦への出場権も獲得しています。2026年8月にはSTECHにも加入し、今後は東海・関東・関西など各地の技術イベントにも積極的に足を運び、エンジニアとしての視野と技術力をさらに広げていきたいと考えています。
               </p>
             </div>
           </Reveal>
@@ -829,8 +726,8 @@ export default function Home() {
           <span className="mount-hole-label mount-hole-label--above layer-silks">H4</span>
         </span>
         <div className="relative max-w-7xl mx-auto pl-[52px] md:pl-[112px]">
-          {/* Works と Contact の間の抵抗 R2（+3V3 → R2 → SDA。リード線の先はスルーホールのランド） */}
-          <SpineBranch cls="spine-part--r2" refName="R2" value="4k7" net="SDA" left={9.5} width={16} top={-50} pinTop={-10} pinBottom={46} lands />
+          {/* Works と Contact の間の抵抗 R2（+3V3 → R2 → INT: 割り込み信号のプルアップ。リード線の先はスルーホールのランド） */}
+          <SpineBranch cls="spine-part--r2" refName="R2" value="4k7" net="INT" left={9.5} width={16} top={-50} pinTop={-10} pinBottom={46} lands />
           <SectionTitle part="J1" index="04" title="Get in Touch" />
 
           <Reveal margin="0px" delay={0.1} className="max-w-md mb-12">
@@ -891,6 +788,7 @@ export default function Home() {
         </div>
       </div>
       {/* ＝＝＝ /基板スパイン ＝＝＝ */}
+      </main>
       {/* ＝＝＝ レイヤー表示の切り替え（左下に固定、1024px 以上のみ。マウスのある端末で、手が空いてから読み込む） ＝＝＝ */}
       <LazyLayerPanel />
     </div>

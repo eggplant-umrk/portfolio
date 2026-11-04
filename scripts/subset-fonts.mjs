@@ -3,7 +3,10 @@
 // 万一ここが失敗しても表示が崩れないようにする。
 //
 // 文字の集め方:
-//   - app/ 以下の .tsx / .ts / .css / .md / .mdx / .json に含まれる文字すべて（コメントも含む）
+//   - app/ 以下の .ts / .tsx: TypeScript のパーサーで読み、文字列・テンプレート文字列・JSX の文字だけを集める
+//     （コメントの文字は集めない。文字列の中の「//」などを誤って消さないよう、正規表現ではなくパーサーを使う）
+//   - app/ 以下の .css: /* … */ のコメントを除いた文字すべて
+//   - app/ 以下の .md / .mdx / .json: 文字すべて
 //   - ASCII の印字可能文字すべて
 //   - よく使う全角記号と全角スペース
 import { readFile, writeFile, readdir, mkdir, stat } from "node:fs/promises";
@@ -11,6 +14,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import subsetFont from "subset-font";
 import * as fontkit from "fontkit";
+import ts from "typescript";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const srcDir = path.join(root, "scripts", "fonts-src");
@@ -38,6 +42,36 @@ async function* walk(dir) {
   }
 }
 
+// .ts / .tsx: 画面に出る可能性のある文字（文字列・テンプレート文字列・JSX のテキスト）と識別子だけを返す。コメントは含めない
+function textFromTypeScript(file, source) {
+  const kind = file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+  const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, kind);
+  const parts = [];
+  const visit = (node) => {
+    if (
+      ts.isStringLiteral(node) ||
+      ts.isNoSubstitutionTemplateLiteral(node) ||
+      ts.isTemplateHead(node) ||
+      ts.isTemplateMiddle(node) ||
+      ts.isTemplateTail(node) ||
+      ts.isJsxText(node) ||
+      ts.isRegularExpressionLiteral(node) ||
+      ts.isNumericLiteral(node) ||
+      ts.isIdentifier(node)
+    ) {
+      parts.push(node.text);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  return parts.join("\n");
+}
+
+// .css: /* … */ のコメントを除く
+function textFromCss(source) {
+  return source.replace(/\/\*[\s\S]*?\*\//g, "");
+}
+
 async function collectChars() {
   const chars = new Set();
   // ASCII 印字可能文字（0x20〜0x7E）
@@ -45,7 +79,9 @@ async function collectChars() {
   for (const ch of extraChars) chars.add(ch);
   let files = 0;
   for await (const file of walk(scanDir)) {
-    const text = await readFile(file, "utf8");
+    const source = await readFile(file, "utf8");
+    const ext = path.extname(file);
+    const text = ext === ".ts" || ext === ".tsx" ? textFromTypeScript(file, source) : ext === ".css" ? textFromCss(source) : source;
     for (const ch of text) {
       const cp = ch.codePointAt(0);
       if (cp < 0x20 || (cp >= 0x7f && cp < 0xa0)) continue; // 制御文字は除く

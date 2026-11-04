@@ -10,10 +10,10 @@ const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://i.ytimg.com",
+  "img-src 'self' data: https://i.ytimg.com", // data: は Next.js の画像のプレースホルダ用。i.ytimg.com は YouTube のサムネイル
   "font-src 'self'",
   `connect-src 'self'${isDev ? " ws:" : ""}`,
-  "frame-src https://www.youtube-nocookie.com https://www.youtube.com",
+  "frame-src https://www.youtube-nocookie.com", // YouTube の埋め込みは youtube-nocookie だけを使う（YouTubeEmbed.tsx）
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
