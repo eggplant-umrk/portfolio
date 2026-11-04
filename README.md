@@ -44,11 +44,13 @@ npm run dev
 ```
 
 - `npm run dev` の前に `predev` で `scripts/subset-fonts.mjs` が走り、`app/` 以下で使っている文字を集めて `app/fonts/*.woff2` を作り直します（`npm run build` の前も同じ）。生成物はリポジトリにも含めています
-- スマホの実機から確認するときは `npm run dev -- -H 0.0.0.0` で起動し、`.env.local` に許可する開発サーバーの origin を書きます（カンマ区切り）
+- スマホの実機から確認するときは `npm run dev -- -H 0.0.0.0` で起動し、`.env.local` にスマホから開くときのパソコンの IP アドレス（またはホスト名）を書きます。`http://` やポート番号は付けません
 
 ```
-DEV_LAN_ORIGINS=http://192.168.0.10:3000
+DEV_LAN_ORIGINS=192.168.0.10
 ```
+
+複数あるときは `DEV_LAN_ORIGINS=192.168.0.10,my-pc.local` のようにカンマで区切ります
 
 そのほかのコマンド:
 
