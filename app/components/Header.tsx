@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties } from "react";
 import BoardSwitch from "./BoardSwitch";
+import { useHideOnScroll } from "../lib/use-hide-on-scroll";
 
 // ＝＝＝ 固定ナビゲーションヘッダー ＝＝＝
 const navLinks = [
@@ -13,15 +14,17 @@ const navLinks = [
 
 export default function Header({ delayBase }: { delayBase: number }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // 1023px 以下: 下にスクロールしている間は上へ隠す（.is-hidden、globals.css）。メニューが開いている間は隠さない
+  const hidden = useHideOnScroll({ hold: isMenuOpen });
 
   return (
     <header
-      className="header-in fixed top-0 left-0 w-full z-40 h-[var(--header-h)] px-6 md:px-12 lg:px-24 flex items-center justify-between md:backdrop-blur-md bg-board/90 md:bg-board/70 border-b border-line"
+      className={`${hidden ? "is-hidden " : ""}header-in site-header fixed top-0 left-0 w-full z-40 h-[var(--header-h)] flex items-center justify-between md:backdrop-blur-md bg-board/90 md:bg-board/70 border-b border-line`}
       style={{ "--d": `${delayBase}s` } as CSSProperties}
     >
       {/* ロゴ風「RU」（銅色の枠）+ リビジョン表記 */}
-      <a href="#" className="flex items-center gap-3 whitespace-nowrap group" aria-label="RIKU UMEZAWA">
-        <span className="flex items-center justify-center w-9 h-9 rounded-[4px] border-2 border-copper font-display font-bold text-sm tracking-tight text-copper-light group-hover:text-copper-hover transition-colors">
+      <a href="#" className="flex items-center gap-3 whitespace-nowrap group max-lg:min-h-11" aria-label="RIKU UMEZAWA">
+        <span className="flex items-center justify-center w-9 h-9 rounded-[4px] border-2 border-copper font-display font-bold text-sm tracking-tight text-copper-light group-hover:text-copper-hover group-active:text-copper-hover transition-colors">
           RU
         </span>
         <span className="font-mono text-[12px] tracking-[0.12em] text-silk-label">REV 2026.11</span>
@@ -49,7 +52,7 @@ export default function Header({ delayBase }: { delayBase: number }) {
         onClick={() => setIsMenuOpen((prev) => !prev)}
         aria-label={isMenuOpen ? "メニューを閉じる" : "メニューを開く"}
         aria-expanded={isMenuOpen}
-        className="lg:hidden relative z-50 flex flex-col justify-center items-center gap-[5px] w-8 h-8 shrink-0 text-silk"
+        className="lg:hidden relative z-50 flex flex-col justify-center items-center gap-[5px] w-11 h-11 -mr-1.5 shrink-0 text-silk"
       >
         <span
           className={`block w-6 h-[2px] bg-current transition-[translate,rotate] duration-300 ease-in-out ${isMenuOpen ? "translate-y-[6px] rotate-45" : ""}`}
@@ -77,13 +80,13 @@ export default function Header({ delayBase }: { delayBase: number }) {
             href={link.href}
             onClick={() => setIsMenuOpen(false)}
             tabIndex={isMenuOpen ? 0 : -1}
-            className={`group font-mono text-2xl font-bold tracking-[0.12em] flex items-baseline gap-3 transition-[opacity,translate] duration-[400ms] ease-out ${
+            className={`group font-mono text-2xl font-bold tracking-[0.12em] flex items-baseline gap-3 py-1.5 transition-[opacity,translate] duration-[400ms] ease-out ${
               isMenuOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
             }`}
             style={{ transitionDelay: isMenuOpen ? `${0.1 + i * 0.06}s` : "0s" }}
           >
             <span className="text-base text-silk-label">{link.part}</span>
-            <span className="text-nav group-hover:text-copper-hover transition-colors">{link.label}</span>
+            <span className="text-nav group-hover:text-copper-hover group-active:text-copper-hover transition-colors">{link.label}</span>
           </a>
         ))}
         </nav>

@@ -213,6 +213,35 @@ body {
   white-space: nowrap;
 }
 
+/* ＝＝＝ スマホ向けの共通ルール ＝＝＝ */
+/* 画面の高さいっぱい: アドレスバーの出入りで高さが変わらない 100dvh を使い、未対応のブラウザは 100vh */
+.min-h-screen-dvh { min-height: 100vh; min-height: 100dvh; }
+/* iPhone のノッチ・ホームバー（viewport-fit=cover）: 本文とヘッダーの左右に safe-area のぶんだけ余白を足す（PC では 0） */
+body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.site-header {
+  padding-left: calc(1.5rem + env(safe-area-inset-left, 0px));
+  padding-right: calc(1.5rem + env(safe-area-inset-right, 0px));
+}
+@media (min-width: 768px) {
+  .site-header { padding-left: calc(3rem + env(safe-area-inset-left, 0px)); padding-right: calc(3rem + env(safe-area-inset-right, 0px)); }
+}
+@media (min-width: 1024px) {
+  .site-header { padding-left: calc(6rem + env(safe-area-inset-left, 0px)); padding-right: calc(6rem + env(safe-area-inset-right, 0px)); }
+}
+/* ホバーできない端末: タップ中に、ホバーと同じ見た目を短く出す */
+@media (hover: none) {
+  .work-card:active .chip-link { color: var(--chip-hover); }
+  .work-card:active .chip-body::before,
+  .work-card:active .chip-body::after {
+    background-image: linear-gradient(var(--chip-pin-hot), var(--chip-pin-hot));
+    filter: drop-shadow(0 0 4px var(--led-glow));
+  }
+  .work-card:active .chip-pin1 { background: var(--led); box-shadow: 0 0 8px var(--led-glow); }
+  .pin:active .pin-pad { box-shadow: 0 0 0 4px color-mix(in srgb, var(--led-glow) 35%, transparent), 0 0 24px var(--led-glow); }
+  .pin:active .pin-label { color: var(--copper-hover); }
+  .yt-facade:active .yt-play { color: #f00; }
+}
+
 /* ＝＝＝ 基板の地 + 点のグリッド（ページのルート要素に敷く） ＝＝＝ */
 .pcb-board {
   background-color: var(--board);
@@ -1053,6 +1082,29 @@ html[data-intro="play"] .opening {
   .spine-part:hover { transform: none; }
 }
 
+/* 1023px 以下: 12px 未満のラベル（スパインの部品・ネット名・TP1、取り付け穴、枠のラベル）を 12px に。
+   それぞれの 11px の指定より後ろに置いて、同じ優先度でも勝つようにする（PC の見た目は変えない） */
+@media (max-width: 1023px) {
+  .spine-part-label,
+  .spine-net,
+  .spine-tp-label,
+  .mount-hole-label,
+  .silk-frame-label { font-size: 12px; }
+}
+
+/* 1023px 以下: 下にスクロールしている間、ヘッダーは上へ・詳細ページ右下のボタンは下へ画面の外に出す（transform だけ、0.25s）。
+   出す・隠すの判断は app/lib/use-hide-on-scroll.ts（.is-hidden を付け外し）。
+   ヘッダーの登場アニメは top を動かすので transform と衝突しない */
+@media (max-width: 1023px) {
+  .site-header,
+  .floating-switch { transition: transform .25s ease; }
+  .site-header.is-hidden { transform: translateY(-100%); }
+  .floating-switch.is-hidden { transform: translateY(calc(100% + 1.5rem + env(safe-area-inset-bottom, 0px))); }
+  /* キーボードのフォーカス（:focus-visible）が中にあるときは隠さない（タップで残るフォーカスは対象外）。:has 未対応のブラウザではこの 1 行だけ無視される */
+  .site-header.is-hidden:has(:focus-visible),
+  .floating-switch.is-hidden:has(:focus-visible) { transform: none; }
+}
+
 /* ======================================================================
    動きを減らす設定（prefers-reduced-motion）。通常のルールより後ろに置き、同じ優先度でも必ず勝つようにする
    （以前はファイル途中にあり、後ろで定義される .marquee-track / .reveal / .scroll-hint-bar には効いていなかった）
@@ -1078,4 +1130,6 @@ html[data-intro="play"] .opening {
   .reveal-mask > * { opacity: 1; transform: none; transition: none; }
   .opening { display: none !important; }
   .board-flash { display: none !important; }
+  .site-header,
+  .floating-switch { transition: none; }
 }

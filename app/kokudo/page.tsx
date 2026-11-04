@@ -47,13 +47,13 @@ export const metadata = workMetadata({
 
 export default function KokudoDetail() {
   return (
-    <main className="min-h-screen bg-board text-silk flex flex-col">
+    <main className="min-h-screen-dvh bg-board text-silk flex flex-col">
       {/* 表示域に入ったら現れる要素の監視（描画はしない） */}
       <RevealInit />
 
       {/* ＝＝＝ ヘッダー（上部の戻るリンク） ＝＝＝ */}
       <nav className="w-full px-8 md:px-24 py-8 max-w-7xl mx-auto">
-        <BackButton className="inline-flex items-center text-sm font-bold text-silk-muted hover:text-silk transition-colors bg-transparent border-none cursor-pointer">
+        <BackButton className="inline-flex items-center max-lg:min-h-11 text-sm font-bold text-silk-muted hover:text-silk active:text-silk transition-colors bg-transparent border-none cursor-pointer">
           ← Back to Home
         </BackButton>
       </nav>
@@ -61,7 +61,7 @@ export default function KokudoDetail() {
       {/* ＝＝＝ タイトル＆メインビジュアル ＝＝＝ */}
       <header className="w-full px-8 md:px-24 max-w-7xl mx-auto mt-8 mb-16">
         <div className="reveal reveal-detail-in" data-reveal-margin="0px">
-          <span className="text-sm font-bold text-accent tracking-wider mb-4 block">
+          <span className="text-sm max-md:text-[15px] font-bold text-accent tracking-wider mb-4 block">
             100program 優秀インタビュー賞・オーディエンス賞 受賞
           </span>
           <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-8 text-silk">
@@ -180,7 +180,7 @@ export default function KokudoDetail() {
               </div>
             ))}
           </div>
-          <p className="text-sm text-silk-label mt-4 text-center">
+          <p className="text-sm max-md:text-[15px] text-silk-label mt-4 text-center">
             Google Play に掲載しているアプリ画面
           </p>
         </section>
@@ -203,7 +203,7 @@ export default function KokudoDetail() {
                     className="w-full h-auto"
                   />
                 </div>
-                <figcaption className="font-mono text-[11px] tracking-[0.12em] text-silk-label mt-2 text-center">{s.caption}</figcaption>
+                <figcaption className="font-mono text-[11px] max-lg:text-[12px] tracking-[0.12em] text-silk-label mt-2 text-center">{s.caption}</figcaption>
               </figure>
             ))}
           </div>
@@ -260,13 +260,13 @@ export default function KokudoDetail() {
         </section>
 
         {/* クレジット */}
-        <p className="font-mono text-[11px] tracking-[0.1em] text-silk-label text-center">
+        <p className="font-mono text-[11px] max-lg:text-[12px] tracking-[0.1em] text-silk-label text-center">
           地図：国土地理院ベクトルタイル ／ 路線：© OpenStreetMap contributors
         </p>
 
         {/* ＝＝＝ 下部の戻るリンク ＝＝＝ */}
         <div className="reveal reveal-detail pt-16 pb-8 flex justify-center" data-reveal-margin="-50px">
-          <BackButton className="inline-flex items-center text-sm font-bold text-silk-muted hover:text-silk transition-colors bg-transparent border-none cursor-pointer">
+          <BackButton className="inline-flex items-center max-lg:min-h-11 text-sm font-bold text-silk-muted hover:text-silk active:text-silk transition-colors bg-transparent border-none cursor-pointer">
             ← Back to Home
           </BackButton>
         </div>
@@ -278,21 +278,21 @@ export default function KokudoDetail() {
       <footer className="w-full pt-24 pb-24 bg-board-outer border-t border-line flex flex-col items-center mt-16">
         <div className="flex flex-col gap-6 mb-16 items-start">
 
-          <a href="https://x.com/rikuumezawa" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-silk hover:text-silk-muted transition-colors group">
+          <a href="https://x.com/rikuumezawa" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 max-lg:min-h-11 text-silk hover:text-silk-muted active:text-silk-muted transition-colors group">
             <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" className="group-hover:scale-110 transition-transform">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
             </svg>
             <span className="text-xl font-normal tracking-wide">rikuumezawa</span>
           </a>
 
-          <a href="https://github.com/eggplant-umrk" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 text-silk hover:text-silk-muted transition-colors group">
+          <a href="https://github.com/eggplant-umrk" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 max-lg:min-h-11 text-silk hover:text-silk-muted active:text-silk-muted transition-colors group">
             <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" className="group-hover:scale-110 transition-transform">
               <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
             </svg>
             <span className="text-xl font-normal tracking-wide">eggplant-umrk</span>
           </a>
 
-          <a href="mailto:eggplant2006@au.com" className="flex items-center gap-4 text-silk hover:text-silk-muted transition-colors group">
+          <a href="mailto:eggplant2006@au.com" className="flex items-center gap-4 max-lg:min-h-11 text-silk hover:text-silk-muted active:text-silk-muted transition-colors group">
             <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
               <polyline points="22,6 12,13 2,6"/>

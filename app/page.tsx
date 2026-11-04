@@ -441,15 +441,27 @@ const WorkCard = ({ work, featured = false }: { work: (typeof worksData)[number]
         <span className="chip-notch" aria-hidden="true" />
         <span className="chip-pin1" aria-hidden="true" />
         <p className="font-mono text-[12px] tracking-[0.12em] text-chip-label">{work.ref}</p>
-        <p className="text-[13px] font-bold text-chip-led mt-3">{work.award}</p>
+        <p className="text-[13px] max-md:text-[15px] font-bold text-chip-led mt-3">{work.award}</p>
         <h4 className="font-display font-bold text-[34px] leading-tight text-chip-text mt-2">{work.title}</h4>
-        <p className="text-[14px] leading-[1.8] text-chip-soft mt-4">{work.description}</p>
+        {/* 767px 以下: 詳細ページがあるカードは説明文を 3 行で切る（続きは詳細ページで読める）。Taleglot は全文のまま */}
+        <p className={`${work.href ? "max-md:line-clamp-3 " : ""}text-[14px] max-md:text-[15px] leading-[1.8] text-chip-soft mt-4`}>{work.description}</p>
         <div className="flex flex-wrap gap-2 mt-5">
-          {work.tech.map((tech) => (
-            <span key={tech} className="font-mono text-[12px] text-chip-muted border border-chip-line rounded-[3px] px-2 py-1">
+          {work.tech.map((tech, i) => (
+            // 767px 以下: 詳細ページがあるカードは最初の 3 つだけ表示し、残りは下の「+N」で数だけ示す
+            <span
+              key={tech}
+              className={`${work.href && i >= 3 ? "max-md:hidden " : ""}font-mono text-[12px] text-chip-muted border border-chip-line rounded-[3px] px-2 py-1`}
+            >
               {tech}
             </span>
           ))}
+          {work.href && work.tech.length > 3 && (
+            // ただの文字（カード全体がリンクなので、中にボタンは置かない）。読み上げは「ほかN件」
+            <span className="md:hidden font-mono text-[12px] text-chip-label px-2 py-1">
+              <span aria-hidden="true">+{work.tech.length - 3}</span>
+              <span className="sr-only">ほか{work.tech.length - 3}件</span>
+            </span>
+          )}
         </div>
         <p className="chip-link font-mono text-[13px] text-chip-muted mt-auto pt-6 transition-colors duration-[350ms]">
           {work.href ? "Read Case Study →" : "Preparation..."}
@@ -553,7 +565,7 @@ export default function Home() {
           起動演出は globals.css の .hero-in / .hero-circuit（CSS アニメーション）で、ページ表示と同時に始まる */}
       <main
         data-pause-offscreen
-        className="relative min-h-screen flex flex-col w-full overflow-hidden pt-[calc(var(--header-h)+48px)] pb-8"
+        className="relative min-h-screen-dvh flex flex-col w-full overflow-hidden pt-[calc(var(--header-h)+48px)] pb-8"
       >
 
         {/* 演出1：背景の光（filter: blur をやめ、静的な radial-gradient で同じ見た目に） */}
@@ -651,13 +663,13 @@ export default function Home() {
           className="fade-in relative z-10 w-full px-8 md:px-24 mt-12 shrink-0 flex items-end justify-between pointer-events-none"
           style={{ "--d": "1.2s" } as CSSProperties}
         >
-          <span className="hidden md:block font-mono text-[10px] tracking-[0.3em] text-silk-label">
+          <span className="hidden md:block font-mono text-[10px] max-lg:text-[12px] tracking-[0.3em] text-silk-label">
             BASED IN AICHI, JAPAN
           </span>
 
           <div className="flex flex-col items-center mx-auto md:mx-0">
             <span
-              className="font-mono text-[10px] tracking-[0.3em] text-silk-label mb-4"
+              className="font-mono text-[10px] max-lg:text-[12px] tracking-[0.3em] text-silk-label mb-4"
               style={{ writingMode: "vertical-rl" }}
             >
               SCROLL
@@ -667,7 +679,7 @@ export default function Home() {
             </div>
           </div>
 
-          <span className="hidden md:block font-mono text-[10px] tracking-[0.3em] text-silk-label">
+          <span className="hidden md:block font-mono text-[10px] max-lg:text-[12px] tracking-[0.3em] text-silk-label">
             2029 NEW GRAD — ENGINEER
           </span>
         </div>
@@ -841,7 +853,7 @@ export default function Home() {
                   className="pin flex flex-col items-start gap-3"
                 >
                   {/* ピン番号 */}
-                  <span className="layer-silks font-mono text-[10px] leading-none text-silk-label" aria-hidden="true">{i + 1}</span>
+                  <span className="layer-silks font-mono text-[10px] max-lg:text-[12px] leading-none text-silk-label" aria-hidden="true">{i + 1}</span>
                   {/* 1 番ピン（X）だけ四角いパッド、2・3 番は丸いパッド */}
                   <span className={`pin-pad layer-fcu${i > 0 ? " pin-pad--round" : ""}`} aria-hidden="true" />
                   <span className="pin-label flex items-center gap-2 font-mono text-[13px] text-silk transition-colors duration-200">
@@ -855,7 +867,7 @@ export default function Home() {
           <Reveal margin="0px" delay={0.3}>
             <div className="silk-frame" aria-hidden="true">
               <span className="silk-frame-label">BOARD INFO</span>
-              <p className="font-mono text-[11px] leading-[1.7] tracking-[0.12em] text-silk-label whitespace-pre">{"RU-PORTFOLIO\nREV 2026.11 · 2 LAYER\nDESIGNED IN NAGOYA"}</p>
+              <p className="font-mono text-[11px] max-lg:text-[12px] leading-[1.7] tracking-[0.12em] text-silk-label whitespace-pre">{"RU-PORTFOLIO\nREV 2026.11 · 2 LAYER\nDESIGNED IN NAGOYA"}</p>
             </div>
           </Reveal>
           </div>
@@ -864,7 +876,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-8 border-t border-line font-mono text-[12px] tracking-[0.12em] text-silk-label">
             <p>© RIKU UMEZAWA</p>
             <p>BOARD: PORTFOLIO · REV 2026.11 · MADE IN NAGOYA</p>
-            <a href="#" className="hover:text-copper-hover transition-colors">
+            <a href="#" className="hover:text-copper-hover active:text-copper-hover transition-colors max-lg:inline-flex max-lg:items-center max-lg:min-h-11">
               BACK TO TOP ↑
             </a>
           </div>
