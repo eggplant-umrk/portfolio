@@ -67,7 +67,7 @@ export default function NewsList({ items }: { items: { date: string; text: strin
             onClick={handleNewsButton}
             aria-expanded={allNewsShown}
             aria-controls="news-list"
-            className="inline-flex items-center justify-center min-h-[44px] px-6 border-[1.5px] border-copper bg-transparent text-copper-light font-mono text-[13px] tracking-[0.1em] rounded-[4px] hover:bg-copper hover:text-board transition-colors duration-300"
+            className="inline-flex items-center justify-center min-h-[44px] px-6 border-[1.5px] border-copper bg-transparent text-copper-light font-mono text-[13px] tracking-[0.1em] rounded-[4px] hover:bg-copper hover:text-board active:bg-copper active:text-board transition-colors duration-300"
           >
             {allNewsShown ? "↑ 閉じる" : "↓ もっと見る"}
           </button>

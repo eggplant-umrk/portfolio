@@ -1,6 +1,7 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
+import { useHideOnScroll } from "../lib/use-hide-on-scroll";
 
 // ＝＝＝ 基板の色（テーマ）切り替え ＝＝＝
 // <html data-board="white|green|blue"> を切り替え、選択を localStorage "portfolio_board" に保存する。
@@ -178,52 +179,126 @@ export function setBoard(board: Board) {
   runFlash();
 }
 
-// variant: "inline" = ヘッダー内（lg 以上で表示） / "menu" = スマホメニュー内 / "floating" = 詳細ページの右下
-// 見た目はどれも同じ: 「BOARD」ラベル + セグメント型（枠 1.5px 銅色・角丸 6px・高さ 40px）の 3 ボタン
-export default function BoardSwitch({ variant = "inline" }: { variant?: "inline" | "menu" | "floating" }) {
-  const board = useSyncExternalStore(subscribe, readBoard, readServerBoard);
-
-  const wrapper =
-    variant === "floating"
-      ? "fixed bottom-6 right-6 z-50 flex items-center gap-2 pl-3 pr-2 py-1 rounded-full bg-board/90 border border-line md:backdrop-blur-md"
-      : variant === "menu"
-        ? "flex items-center gap-2 mt-6"
-        : "hidden lg:flex items-center gap-2";
-
+// 3 色のセグメント型スイッチ（枠 1.5px 銅色・角丸 6px・高さ 40px）。どの variant でも見た目は同じ
+function Segments({ board, onPick }: { board: Board; onPick?: () => void }) {
   return (
-    <div className={wrapper} role="group" aria-label="基板の色">
-      <span className="font-mono text-[11px] tracking-[0.14em] text-silk-label">BOARD</span>
-      <div className="flex items-center h-10 rounded-[6px] border-[1.5px] border-copper px-[3px] gap-[3px]">
-        {BOARDS.map((b) => {
-          const selected = board === b.id;
-          return (
-            // ボタン自体は 44px の高さ（枠の上下 2px ずつ外へ）でタップ範囲を確保し、見える部分は中の span
-            <button
-              key={b.id}
-              type="button"
-              aria-label={b.label}
-              aria-pressed={selected}
-              onClick={() => setBoard(b.id)}
-              className="flex items-center h-11 -my-[2px] shrink-0 rounded-[4px] focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copper"
+    <div className="flex items-center h-10 rounded-[6px] border-[1.5px] border-copper px-[3px] gap-[3px]">
+      {BOARDS.map((b) => {
+        const selected = board === b.id;
+        return (
+          // ボタン自体は 44px の高さ（枠の上下 2px ずつ外へ）でタップ範囲を確保し、見える部分は中の span
+          <button
+            key={b.id}
+            type="button"
+            aria-label={b.label}
+            aria-pressed={selected}
+            onClick={() => {
+              setBoard(b.id);
+              onPick?.();
+            }}
+            className="flex items-center h-11 -my-[2px] shrink-0 rounded-[4px] focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copper"
+          >
+            <span
+              className={`flex items-center gap-1.5 h-8 px-2 rounded-[4px] font-mono text-[12px] tracking-[0.08em] transition-colors ${
+                selected ? "bg-switch-on text-board" : "text-silk-muted hover:text-silk active:text-silk"
+              }`}
             >
               <span
-                className={`flex items-center gap-1.5 h-8 px-2 rounded-[4px] font-mono text-[12px] tracking-[0.08em] transition-colors ${
-                  selected ? "bg-switch-on text-board" : "text-silk-muted hover:text-silk"
-                }`}
-              >
-                <span
-                  className="block w-5 h-5 rounded-[3px] border"
-                  style={{
-                    backgroundColor: b.swatch,
-                    borderColor: selected ? "color-mix(in srgb, var(--board) 55%, transparent)" : b.swatchBorder,
-                  }}
-                />
-                {b.short}
-              </span>
-            </button>
-          );
-        })}
+                className="block w-5 h-5 rounded-[3px] border"
+                style={{
+                  backgroundColor: b.swatch,
+                  borderColor: selected ? "color-mix(in srgb, var(--board) 55%, transparent)" : b.swatchBorder,
+                }}
+              />
+              {b.short}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// 詳細ページの右下（固定表示）。1024px 以上は今までどおりの横並び、スマホ・タブレットでは
+// 「BOARD + 今の色の色見本」の小さなボタン（44px）にたたみ、押すと 3 色が上に開く。Esc と外側のタップで閉じる
+function FloatingSwitch({ board }: { board: Board }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
+  const current = BOARDS.find((b) => b.id === board) ?? BOARDS[0];
+  // 1023px 以下: 下にスクロールしている間は下へ隠す（.is-hidden、globals.css）。選択肢が開いている間は隠さず、ページの一番下では出す
+  const hidden = useHideOnScroll({ hold: open, showAtBottom: true });
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+    const onPointerDown = (e: PointerEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [open]);
+
+  return (
+    // 下・右の余白は iPhone のホームバーやノッチ（safe-area）のぶんだけ広げる
+    // 条件付きのクラスは先頭に置く（末尾に `${}` を続けると、直前のクラスが Tailwind に拾われない）
+    <div ref={rootRef} className={`${hidden ? "is-hidden " : ""}floating-switch fixed z-50 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-[calc(1.5rem+env(safe-area-inset-right))]`}>
+      {/* 1024px 以上: 横並び */}
+      <div className="hidden lg:flex items-center gap-2 pl-3 pr-2 py-1 rounded-full bg-board/90 border border-line md:backdrop-blur-md" role="group" aria-label="基板の色">
+        <span className="font-mono text-[11px] tracking-[0.14em] text-silk-label">BOARD</span>
+        <Segments board={board} />
       </div>
+      {/* 1023px 以下: たたんだボタン + 開いたときの 3 色 */}
+      <div className="lg:hidden">
+        {open && (
+          <div
+            id={panelId}
+            role="group"
+            aria-label="基板の色"
+            className="absolute right-0 bottom-[calc(100%+8px)] flex items-center pl-3 pr-2 py-1 rounded-full bg-board/90 border border-line md:backdrop-blur-md"
+          >
+            <Segments board={board} onPick={() => setOpen(false)} />
+          </div>
+        )}
+        <button
+          ref={buttonRef}
+          type="button"
+          aria-label="基板の色を選ぶ"
+          aria-expanded={open}
+          aria-controls={open ? panelId : undefined}
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-2 h-11 pl-3 pr-2 rounded-full bg-board/90 border border-line md:backdrop-blur-md font-mono text-[12px] tracking-[0.14em] text-silk-label active:text-silk focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copper"
+        >
+          BOARD
+          <span
+            className="block w-7 h-7 rounded-[4px] border"
+            style={{ backgroundColor: current.swatch, borderColor: current.swatchBorder }}
+            aria-hidden="true"
+          />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// variant: "inline" = ヘッダー内（lg 以上で表示） / "menu" = スマホメニュー内 / "floating" = 詳細ページの右下
+export default function BoardSwitch({ variant = "inline" }: { variant?: "inline" | "menu" | "floating" }) {
+  const board = useSyncExternalStore(subscribe, readBoard, readServerBoard);
+  if (variant === "floating") return <FloatingSwitch board={board} />;
+  return (
+    <div className={variant === "menu" ? "flex items-center gap-2 mt-6" : "hidden lg:flex items-center gap-2"} role="group" aria-label="基板の色">
+      <span className="font-mono text-[11px] max-lg:text-[12px] tracking-[0.14em] text-silk-label">BOARD</span>
+      <Segments board={board} />
     </div>
   );
 }

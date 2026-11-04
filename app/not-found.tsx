@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 // 断線の隙間の火花は CSS アニメーション（.open-circuit-spark）。prefers-reduced-motion のときは光らせない
 export default function NotFound() {
   return (
-    <main className="pcb-board min-h-screen w-full flex flex-col items-center justify-center px-8 py-24 text-center text-silk">
+    <main className="pcb-board min-h-screen-dvh w-full flex flex-col items-center justify-center px-8 py-24 text-center text-silk">
       <svg className="open-circuit" viewBox="0 0 320 80" width="320" height="80" aria-hidden="true">
         {/* 左右の配線。断線した端は少し広げて、むき出しの銅に見せる */}
         <path className="open-circuit-trace" d="M0 40 H60 L84 16 H132" />
@@ -32,7 +32,7 @@ export default function NotFound() {
       <p className="text-silk-soft leading-relaxed mt-10">お探しのページは見つかりませんでした。</p>
       <Link
         href="/"
-        className="mt-10 inline-flex items-center h-11 px-6 rounded-[6px] border-[1.5px] border-copper font-mono text-[13px] tracking-[0.08em] text-silk-muted hover:text-silk transition-colors focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copper"
+        className="mt-10 inline-flex items-center h-11 px-6 rounded-[6px] border-[1.5px] border-copper font-mono text-[13px] tracking-[0.08em] text-silk-muted hover:text-silk active:text-silk transition-colors focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copper"
       >
         ← Back to Home
       </Link>

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Chakra_Petch, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -54,6 +54,13 @@ export const metadata: Metadata = {
   verification: {
     google: "peCh05ipr597sLrWFNxjsDp27gnzR_YbqVAFm0apUZc",
   },
+};
+
+// iPhone のノッチ・ホームバーまで描画領域を広げ、余白は CSS の env(safe-area-inset-*) で取る
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
