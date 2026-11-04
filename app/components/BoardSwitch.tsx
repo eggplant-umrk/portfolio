@@ -5,7 +5,8 @@ import { useHideOnScroll } from "../lib/use-hide-on-scroll";
 
 // ＝＝＝ 基板の色（テーマ）切り替え ＝＝＝
 // <html data-board="white|green|blue"> を切り替え、選択を localStorage "portfolio_board" に保存する。
-// 描画前の適用は app/layout.tsx の <head> のインラインスクリプトが行う（既定は white）。
+// 描画前の適用は app/layout.tsx の <head> のインラインスクリプトが行う（保存値がなければ、OS のダークモード設定なら green、
+// それ以外は white。表示中の追従は BoardAuto.tsx の followSystemBoard）。SSR とハイドレーションの値はつねに white
 export const BOARDS = [
   // 白の色見本は白い地でも見えるよう、枠をはっきりした灰色にする
   { id: "white", label: "白の基板", short: "WHT", swatch: "#F2F1EA", swatchBorder: "#8C8F86", themeColor: "#F2F1EA" },
@@ -190,7 +191,7 @@ function Segments({ board, onPick }: { board: Board; onPick?: () => void }) {
           <button
             key={b.id}
             type="button"
-            aria-label={b.label}
+            aria-label={`${b.short} ${b.label}`} /* 読み上げ名は見えている文字（WHT など）で始める */
             aria-pressed={selected}
             onClick={() => {
               setBoard(b.id);
@@ -273,7 +274,7 @@ function FloatingSwitch({ board }: { board: Board }) {
         <button
           ref={buttonRef}
           type="button"
-          aria-label="基板の色を選ぶ"
+          aria-label="BOARD 基板の色を選ぶ"
           aria-expanded={open}
           aria-controls={open ? panelId : undefined}
           onClick={() => setOpen((v) => !v)}

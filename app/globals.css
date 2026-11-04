@@ -1,10 +1,11 @@
 @import "tailwindcss";
 
 /* ＝＝＝ 基板の色（テーマ）＝＝＝
-   <html data-board="white|green|blue"> で切り替える。色はすべて CSS 変数で定義し、既定（:root）は白。
-   緑・青は html[data-board="green"] / html[data-board="blue"] で上書きする。OS のライト/ダーク設定には連動しない。
+   <html data-board="white|green|blue"> で切り替える。色はすべて CSS 変数で定義し、:root は白。
+   緑・青は html[data-board="green"] / html[data-board="blue"] で上書きする。
    選択は localStorage "portfolio_board" に保存し、描画前に app/layout.tsx のインラインスクリプトが data-board と
-   <meta name="theme-color"> を切り替える（切り替え UI は app/components/BoardSwitch.tsx） */
+   <meta name="theme-color"> を切り替える。保存値がなければ OS のダークモード設定（prefers-color-scheme: dark）なら緑、
+   それ以外は白（表示中の追従は app/components/BoardAuto.tsx。切り替え UI は app/components/BoardSwitch.tsx） */
 :root {
   color-scheme: light;
 
@@ -333,9 +334,12 @@ body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-are
   background: var(--accent);
 }
 
-/* PC（マウス操作）の場合のみ、純正のカーソルを消す */
+/* 純正のカーソルは、プローブ型カーソル（ProbeCursor.tsx）が動き出して <html> に probe-on を付けたときだけ消す。
+   読み込み前・読み込みに失敗したとき・動きを減らす設定の人には消さない（マウスのある端末だけ） */
 @media (pointer: fine) {
-  body, a, button {
+  html.probe-on body,
+  html.probe-on a,
+  html.probe-on button {
     cursor: none !important;
   }
 }
@@ -617,9 +621,6 @@ body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-are
   animation: probe-wave 2.4s linear infinite;
 }
 @keyframes probe-wave { to { transform: translateX(-120px); } }
-@media (prefers-reduced-motion: reduce) {
-  .probe-wave path { animation: none; }
-}
 @media (hover: none) {
   .probe { display: none; }
 }
@@ -669,9 +670,6 @@ html[data-layers~="bcu"] .layer-bcu { visibility: visible; }
   89%, 92% { opacity: 0; }
   93%, 95% { opacity: .8; }
   96%, 100% { opacity: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .open-circuit-spark { animation: none; opacity: 0; }
 }
 /* レイヤーのパネルはマウスのある PC 向け。タブレットなど (hover: none) の端末では 1024px 以上でも出さない */
 @media (hover: none) {
@@ -1078,10 +1076,6 @@ html[data-intro="play"] .opening {
   .fiducial,
   .trace-bg { display: none; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .spine-part:hover { transform: none; }
-}
-
 /* 1023px 以下: 12px 未満のラベル（スパインの部品・ネット名・TP1、取り付け穴、枠のラベル）を 12px に。
    それぞれの 11px の指定より後ろに置いて、同じ優先度でも勝つようにする（PC の見た目は変えない） */
 @media (max-width: 1023px) {
@@ -1132,4 +1126,7 @@ html[data-intro="play"] .opening {
   .board-flash { display: none !important; }
   .site-header,
   .floating-switch { transition: none; }
+  .probe-wave path { animation: none; }                      /* プローブの I2C 波形 */
+  .open-circuit-spark { animation: none; opacity: 0; }       /* 404 の火花 */
+  .spine-part:hover { transform: none; }                     /* スパインの部品の拡大 */
 }

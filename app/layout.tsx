@@ -71,7 +71,7 @@ export default function RootLayout({
   return (
     <html
       lang="ja"
-      className={`${chakraPetch.variable} ${jetBrainsMono.variable} ${zenKakuGothicNew.variable} h-full antialiased scroll-smooth`}
+      className={`${chakraPetch.variable} ${jetBrainsMono.variable} ${zenKakuGothicNew.variable} h-full antialiased motion-safe:scroll-smooth`}
       data-board="white"
       data-layers="fcu silks edge"
       suppressHydrationWarning
